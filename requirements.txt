@@ -1,0 +1,8 @@
+boto3==1.26.134
+EdgeGPT==0.4.2
+EdgeGPT==0.4.2
+openai==0.27.6
+openai_whisper==20230314
+pydub==0.25.1
+python-dotenv==1.0.0
+SpeechRecognition==3.10.0
