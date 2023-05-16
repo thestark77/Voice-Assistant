@@ -68,7 +68,7 @@ def print_and_play(message):
     play_audio('audio/response.mp3')
 
 
-def audio_to_text(filename):
+def audio_to_text():
     phrase = ''
     recognizer = sr.Recognizer()
     with sr.Microphone() as source:
@@ -77,13 +77,8 @@ def audio_to_text(filename):
         audio = recognizer.listen(source)
 
         try:
-            with open(filename, "wb") as f:
-                f.write(audio.get_wav_data())
-            model = whisper.load_model("tiny")
-            result = model.transcribe(filename, language="spanish", fp16=False)
-            phrase = result["text"]
-            # textFromAudio = recognizer.recognize_google(audio, language="es-CO")
-            # phrase = textFromAudio.lower()
+            textFromAudio = recognizer.recognize_google(audio, language="es-CO")
+            phrase = textFromAudio.lower()
             print(f"Usuario: {phrase}")
 
         except sr.RequestError:
@@ -98,7 +93,7 @@ def audio_to_text(filename):
 
 def wake_word_from_audio():
     while True:
-        phrase = audio_to_text("audio/audio.wav")
+        phrase = audio_to_text()
         wake_word = get_wake_word(phrase)
         if wake_word is not None:
             break
@@ -158,7 +153,7 @@ async def main():
         print('Respuesta del bot: ')
         print_and_play('¿En qué puedo ayudarte?')
 
-        prompt = audio_to_text("audio/audio_prompt.wav")
+        prompt = audio_to_text()
 
         if wake_word == BING_WAKE_WORD:
             bot_response = await get_bing_response(prompt)
