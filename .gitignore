@@ -1,3 +1,4 @@
 audio
 .env
 settings/__pycache__
+.vscode
