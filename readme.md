@@ -21,3 +21,13 @@ pip install boto3
 pip install pydub
 pip install openai
 pip install ffmpeg-python
+https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#shared-credentials-file
+https://us-east-1.console.aws.amazon.com/iamv2/home#/users/details/VoiceA?section=permissions
+
+
+python -m venv venv
+source venv/Scripts/activate
+pip list
+pip install -r requirements.txt 
+deactivate
+poetry

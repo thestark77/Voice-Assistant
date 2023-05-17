@@ -3,6 +3,8 @@ import sys
 import re
 import time
 import random
+import threading
+import msvcrt
 import openai
 import asyncio
 import boto3
@@ -11,7 +13,7 @@ from pydub import playback
 import speech_recognition as sr
 from EdgeGPT import Chatbot, ConversationStyle
 from dotenv import load_dotenv
-from settings.config import BING_WAKE_WORDS, GPT_WAKE_WORDS, EXIT_WORDS, CONTINUE_CHAT_PHRASES, FINISH_CHAT_PHRASES, RESET_WORDS, DID_NOT_UNDERSTAND_PHRASES
+from settings.config import BING_WAKE_WORDS, GPT_WAKE_WORDS, EXIT_WORDS, FINISH_CHAT_PHRASES, RESET_WORDS, DID_NOT_UNDERSTAND_PHRASES, CONTINUE_CHAT_PHRASES, INITIAL_CONTEXT, ACTIVATION_PHRASES
 
 load_dotenv()
 
@@ -29,31 +31,21 @@ session = boto3.Session(
 )
 
 
+def exit_key():
+    while True:
+        if msvcrt.kbhit():
+            key = msvcrt.getch()
+            if key.upper() == b'F':  # Verificar si se presiona la tecla "F"
+                print("¡Se presionó la tecla F! Finalizando el programa...")
+                os._exit(0)
+
+
 def any_word_of_list_in_phrase(list, phrase):
     for word in list:
         if word in phrase:
             return True
 
     return False
-
-# def get_wake_word(phrase):
-#     for word in GPT_WAKE_WORDS:
-#         if word in phrase:
-#             return 'chat'
-
-#     for word in BING_WAKE_WORDS:
-#         if word in phrase:
-#             return 'bing'
-
-#     return None
-
-
-# def get_exit_confirmation(phrase):
-#     for word in EXIT_WORDS:
-#         if word in phrase:
-#             return True
-
-#     return False
 
 
 def get_random_phrase(list):
@@ -102,11 +94,10 @@ def print_and_play(message):
 def audio_to_text():
     phrase = ''
     recognizer = sr.Recognizer()
+    recognizer.pause_threshold = 0.6
     with sr.Microphone() as source:
-        # recognizer.adjust_for_ambient_noise(source)
-        recognizer.pause_threshold = 1.5
+        recognizer.adjust_for_ambient_noise(source)
         audio = recognizer.listen(source)
-
         try:
             textFromAudio = recognizer.recognize_google(
                 audio, language="es-CO")
@@ -123,24 +114,50 @@ def audio_to_text():
     return phrase
 
 
-def wake_word_from_audio():
-    while True:
-        phrase = audio_to_text()
-        if any_word_of_list_in_phrase(BING_WAKE_WORDS, phrase):
-            wake_word = 'bing'
-            break
-        elif any_word_of_list_in_phrase(GPT_WAKE_WORDS, phrase):
-            wake_word = 'chat'
-            break
-        elif any_word_of_list_in_phrase(RESET_WORDS, phrase):
-            wake_word = 'reset'
-            break
-        elif any_word_of_list_in_phrase(EXIT_WORDS, phrase):
-            wake_word = 'exit'
-            break
-        else:
-            print("Di una palabra clave")
+def wake_word_from_phrase(phrase):
+    if any_word_of_list_in_phrase(EXIT_WORDS, phrase):
+        wake_word = 'exit'
+    elif any_word_of_list_in_phrase(BING_WAKE_WORDS, phrase):
+        wake_word = 'bing'
+    elif any_word_of_list_in_phrase(GPT_WAKE_WORDS, phrase):
+        wake_word = 'chat'
+    else:
+        wake_word = ''
+        print("Di una palabra clave")
     return wake_word
+
+
+def function_prompt_from_phrase(phrase):
+    if any_word_of_list_in_phrase(EXIT_WORDS, phrase):
+        prompt = 'exit'
+    elif any_word_of_list_in_phrase(RESET_WORDS, phrase):
+        prompt = 'reset'
+    elif any_word_of_list_in_phrase(EXIT_WORDS, phrase):  # TODO:
+        prompt = 'youtube'
+    elif any_word_of_list_in_phrase(EXIT_WORDS, phrase):  # TODO:
+        prompt = 'spotify'
+    elif any_word_of_list_in_phrase(EXIT_WORDS, phrase):  # TODO:
+        prompt = 'wikipedia'
+    elif any_word_of_list_in_phrase(EXIT_WORDS, phrase):  # TODO:
+        prompt = 'wolfram'
+    else:
+        prompt = 'assistant'
+    return prompt
+
+
+def execute_special_function(function):
+    if function == 'exit':
+        goodbye_phrase = get_random_phrase(FINISH_CHAT_PHRASES)
+        print_and_play(goodbye_phrase)
+        sys.exit(0)
+    elif function == 'youtube':  # TODO:
+        prompt = 'youtube'
+    elif function == 'spotify':  # TODO:
+        prompt = 'spotify'
+    elif function == 'wikipedia':  # TODO:
+        prompt = 'wikipedia'
+    elif function == 'wolfram':  # TODO:
+        prompt = 'wolfram'
 
 
 def clear_bing_text(response):
@@ -155,11 +172,15 @@ def clear_bing_text(response):
 
 async def get_bing_response(prompt):
     bot = Chatbot(cookie_path='settings/cookies.json')
-
     print("Conectando con Bing...")
-    response = await bot.ask(prompt=prompt, conversation_style=ConversationStyle.creative)
-    bot_response = clear_bing_text(response)
-    await bot.close()
+    try:
+        response = await bot.ask(prompt=prompt, conversation_style=ConversationStyle.creative)
+        bot_response = clear_bing_text(response)
+        await bot.close()
+    except Exception as e:
+        print(e)
+        print_and_play("No me he podido conectar con Bing EdgeGPT")
+        return
     return bot_response
 
 
@@ -167,74 +188,99 @@ def get_chatgpt_response(prompt, messages=None):
     if messages is None:
         print("🆕 Nueva conversación creada")
         context = {"role": "system",
-                   "content": "Eres un asistente muy útil."}
+                   "content": INITIAL_CONTEXT}
         messages = [context]
 
     user_prompt = {"role": "user", "content": prompt}
     messages.append(user_prompt)
 
     # Send prompt to GPT-3.5-turbo API
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=messages,
-        temperature=0.5,
-        max_tokens=150,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0,
-        n=1,
-        stop=["\nUser:"],
-    )
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+            temperature=0.5,
+            max_tokens=80,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0,
+            n=1,
+            stop=["\nUser:"],
+        )
+    except Exception as e:
+        print(e)
+        print_and_play("No me he podido conectar con Bing EdgeGPT")
+        return
 
     bot_response = response["choices"][0]["message"]["content"]
 
     messages.append({"role": "assistant", "content": bot_response})
 
-    return [bot_response, messages]
+    response = {
+        "bot_response": bot_response,
+        "messages": messages
+    }
+
+    return response
 
 
 async def main():
     create_audio_folder()
 
+    # Crear y ejecutar el hilo para verificar la tecla "F"
+    thread = threading.Thread(target=exit_key)
+    thread.start()
+
     while True:
 
         print("Esperando una palabra clave...")
 
-        wake_word = wake_word_from_audio()
-        if wake_word == 'exit':
-            goodbye_phrase = get_random_phrase(FINISH_CHAT_PHRASES)
-            print_and_play(goodbye_phrase)
-            sys.exit(0)
-
-        print_and_play('¿En qué puedo ayudarte?')
+        while True:
+            wake_prompt = audio_to_text()
+            wake_word = wake_word_from_phrase(wake_prompt)
+            if wake_word == 'exit':
+                goodbye_phrase = get_random_phrase(FINISH_CHAT_PHRASES)
+                print_and_play(goodbye_phrase)
+                sys.exit(0)
+            elif wake_word != '':
+                break
+        activation_phrase = get_random_phrase(ACTIVATION_PHRASES)
+        print_and_play(activation_phrase)
+        time.sleep(2)
 
         messages = None
+        did_not_catch_you = 0
 
         while True:
             prompt = audio_to_text()
             if prompt is not None and prompt.strip() != '':
-                if any_word_of_list_in_phrase(EXIT_WORDS, prompt):
-                    goodbye_phrase = get_random_phrase(FINISH_CHAT_PHRASES)
-                    print_and_play(goodbye_phrase)
-                    sys.exit(0)
-                elif wake_word == 'reset':
+                wake_prompt = function_prompt_from_phrase(prompt)
+                if wake_prompt == 'reset':
                     print_and_play('Empezando un nuevo chat...')
                     break
-                elif wake_word == 'bing':
-                    bot_response = await get_bing_response(prompt)
+                elif wake_prompt != 'assistant':
+                    execute_special_function(wake_prompt)
                 else:
-                    response = get_chatgpt_response(prompt, messages)
-                    bot_response = response[0]
-                    messages = response[1]
+                    if wake_word == 'bing':
+                        bot_response = await get_bing_response(prompt)
+                    else:
+                        response = get_chatgpt_response(prompt, messages)
+                        bot_response = response["bot_response"]
+                        messages = response["messages"]
+
                 print_and_play(bot_response)
-                continue_phrase = get_random_phrase(CONTINUE_CHAT_PHRASES)
-                print_and_play(continue_phrase)
-                time.sleep(1.5)
+                if not any_word_of_list_in_phrase(["?", "¿"], bot_response):
+                    continue_phrase = get_random_phrase(CONTINUE_CHAT_PHRASES)
+                    print_and_play(continue_phrase)
+                    # time.sleep(2)
             else:
-                did_not_understand_phrase = get_random_phrase(
-                    DID_NOT_UNDERSTAND_PHRASES)
-                print_and_play(did_not_understand_phrase)
-                time.sleep(1.5)
+                print(did_not_catch_you)
+                if did_not_catch_you % 2 == 0:
+                    did_not_understand_phrase = get_random_phrase(
+                        DID_NOT_UNDERSTAND_PHRASES)
+                    print_and_play(did_not_understand_phrase)
+                    did_not_catch_you += 1
+                # time.sleep(2)
 
 if __name__ == "__main__":
     asyncio.run(main())

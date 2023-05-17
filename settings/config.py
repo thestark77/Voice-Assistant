@@ -1,8 +1,30 @@
 # Constants ----------------------------------------------------------------
+INITIAL_CONTEXT = "Eres un asistente muy útil"
 BING_WAKE_WORDS = ["hola", "asistente"]
 GPT_WAKE_WORDS = ["chat", "chad"]
 RESET_WORDS = ["reiniciar", "restablecer", "reactivar",]
 EXIT_WORDS = ["adios", "adiós", "hasta luego", "chao", "nos vemos"]
+ACTIVATION_PHRASES = ["¡Hola! ¿En qué puedo ayudarte hoy?",
+                      "¡Saludos! Estoy aquí para asistirte",
+                      "¡Encantada de estar a tu servicio!",
+                      "¡Bienvenido de nuevo! ¿En qué puedo servirte?",
+                      "¡Hola! Listo para responder todas tus preguntas",
+                      "¡Qué gusto escucharte! ¿Qué puedo hacer por ti hoy?",
+                      "Soy todo oídos. ¿Cómo puedo ayudarte?",
+                      "¡Aquí estoy para ayudarte en lo que necesites!",
+                      "¡Saludos! Listo para resolver tus inquietudes",
+                      "¡Hola! ¿Cómo puedo hacer de tu día un poco mejor?",
+                      "¡Saludos! Estoy aquí para hacer tu vida más fácil",
+                      "¡Hola! Cuéntame qué necesitas y estaré encantado de ayudarte",
+                      "¡Qué gusto tenerte aquí! Estoy a tu disposición",
+                      "¡Hola! Estoy entusiasmado por ser de utilidad para ti",
+                      "¡Saludos! Estoy listo para atender tus solicitudes",
+                      "¡Hola! Tu asistente personal favorito está listo para asistirte",
+                      "Me despertaste, pero ya estoy listo para servirte, cuéntamelo todo",
+                      "¡Hola! Siempre es un placer estar a tu servicio",
+                      "¡Hola! Soy tu asistente. ¿En qué puedo ayudarte hoy?",
+                      "¿En qué puedo ayudarte?"
+                      ]
 CONTINUE_CHAT_PHRASES = ["¿Algo más que pueda hacer por ti?",
                          "¿Algo más que quieras pedirme?",
                          "Si deseas seguir conversando, estoy aquí para ti",
@@ -31,21 +53,21 @@ FINISH_CHAT_PHRASES = ["Fue un placer ayudarte. ¡Hasta pronto!",
                        "bai bai",
                        "Si tienes más preguntas en el futuro, no dudes en buscarme. ¡Hasta la próxima!",
                        "Me despido, pero recuerda que estoy aquí para ayudarte cuando lo necesites. ¡Adiós!",
-                       "Fue un placer ayudarte en esta ocasión.",
+                       "Fue un placer ayudarte en esta ocasión",
                        "Me encantó hablar contigo, ¡Hasta pronto!"
                        ]
 DID_NOT_UNDERSTAND_PHRASES = ["Perdona, parece que no te entendí bien. ¿Podrías repetirlo, por favor?",
-                       "No capté correctamente lo que dijiste. ¿Puedes decirlo de nuevo, por favor?",
-                       "Parece que hubo un problema de comunicación. ¿Podrías repetirlo más despacio?",
-                       "¿Podrías repetirlo para que pueda comprenderlo mejor?",
-                       "No logré captar todos los detalles. ¿Podrías repetirlo con más claridad?",
-                       "Siento haberme perdido parte de tu solicitud. ¿Podrías decirlo nuevamente para asegurarnos de estar en la misma página?",
-                       "No pude entender completamente lo que dijiste. ¿Podrías repetirlo para que pueda ayudarte mejor?",
-                       "Parece que hubo una desconexión momentánea. ¿Podrías reiterar tu pregunta, por favor?",
-                       "Mis disculpas si hubo una falla en la transcripción. ¿Podrías volver a decirlo?",
-                       "Lamento si no logré capturar todos los detalles. ¿Podrías repetirlo, por favor?",
-                       "Siento haberme perdido algo en tu solicitud. ¿Podrías volver a mencionarlo?",
-                       "Parece que necesito más información para entender correctamente. ¿Podrías repetirlo con más detalles?",
-                       "Lamento si no pude captar la totalidad de tu mensaje. ¿Podrías repetirlo, por favor?",
-                       "Mis disculpas si no pude procesar correctamente lo que mencionaste. ¿Podrías repetirlo para que pueda entenderlo mejor?",
-                       ]
+                              "No capté correctamente lo que dijiste. ¿Puedes decirlo de nuevo, por favor?",
+                              "Parece que hubo un problema de comunicación. ¿Podrías repetirlo más despacio?",
+                              "¿Podrías repetirlo para que pueda comprenderlo mejor?",
+                              "No logré captar todos los detalles. ¿Podrías repetirlo con más claridad?",
+                              "Siento haberme perdido parte de tu solicitud. ¿Podrías decirlo nuevamente para asegurarnos de estar en la misma página?",
+                              "No pude entender completamente lo que dijiste. ¿Podrías repetirlo para que pueda ayudarte mejor?",
+                              "Parece que hubo una desconexión momentánea. ¿Podrías reiterar tu pregunta, por favor?",
+                              "Mis disculpas si hubo una falla en la transcripción. ¿Podrías volver a decirlo?",
+                              "Lamento si no logré capturar todos los detalles. ¿Podrías repetirlo, por favor?",
+                              "Siento haberme perdido algo en tu solicitud. ¿Podrías volver a mencionarlo?",
+                              "Parece que necesito más información para entender correctamente. ¿Podrías repetirlo con más detalles?",
+                              "Lamento si no pude captar la totalidad de tu mensaje. ¿Podrías repetirlo, por favor?",
+                              "Mis disculpas si no pude procesar correctamente lo que mencionaste. ¿Podrías repetirlo para que pueda entenderlo mejor?",
+                              ]
