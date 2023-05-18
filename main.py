@@ -14,7 +14,7 @@ from pydub import playback
 import speech_recognition as sr
 from EdgeGPT import Chatbot, ConversationStyle
 from dotenv import load_dotenv
-from settings.config import BING_WAKE_WORDS, GPT_WAKE_WORDS, EXIT_WORDS, FINISH_CHAT_PHRASES, RESET_WORDS, DID_NOT_UNDERSTAND_PHRASES, CONTINUE_CHAT_PHRASES, INITIAL_CONTEXT, ACTIVATION_PHRASES, TEXT_MARKUP, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, SYSTEM_TEXT_COLOR, SPEECH_SPEED
+from settings.config import BING_WAKE_WORDS, GPT_WAKE_WORDS, EXIT_WORDS, FINISH_CHAT_PHRASES, RESET_WORDS, DID_NOT_UNDERSTAND_PHRASES, CONTINUE_CHAT_PHRASES, INITIAL_CONTEXT, ACTIVATION_PHRASES, TEXT_MARKUP, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, SYSTEM_TEXT_COLOR, SPEECH_SPEED, PUSH_TO_TALK_KEY, RECORD_INTERVAL, AUDIO_CAPTURE_MODE
 
 load_dotenv()
 
@@ -105,36 +105,89 @@ def print_and_play(message):
         play_audio('audio/response.mp3')
 
 
-def audio_to_text(awake=True):
+def ptt_audio_to_text(awake=True):
+    phrase = ''
+    recognizer = sr.Recognizer()
+    # recognizer.pause_threshold = 0.6
+    while True:
+        with sr.Microphone() as source:
+            # Inicializar audio vacío
+            audio = sr.AudioData(
+                frame_data=b'', sample_rate=44100, sample_width=2)
+            play_audio('audio/wake_detected.mp3')
+            # print_system_output("Presiona la tecla espacio para empezar a grabar...")
+            # Esperar a que el usuario presione la tecla PTT
+            keyboard.wait(PUSH_TO_TALK_KEY)
+            while True:
+                # Grabar audio en fragmentos de 0.3 segundos
+                audio_chunk = recognizer.record(
+                    source, duration=RECORD_INTERVAL)
+                # print(audio_chunk)
+                # Agregar el fragmento de audio al audio total
+                new_frame_data = audio.frame_data + audio_chunk.frame_data
+                audio = sr.AudioData(
+                    frame_data=new_frame_data, sample_rate=44100, sample_width=2)
+                if not keyboard.is_pressed(PUSH_TO_TALK_KEY):
+                    break
+                # time.sleep(0.1)
+
+        try:
+            textFromAudio = recognizer.recognize_google(
+                audio, language="es-CO")
+            phrase = textFromAudio.lower()
+            if phrase is not None and phrase.strip() != '':
+                if awake:
+                    print(f"{USER_TEXT_COLOR}Usuario: {phrase}{TEXT_MARKUP}")
+                break
+            else:
+                if awake:
+                    did_not_understand_phrase = get_random_phrase(
+                        DID_NOT_UNDERSTAND_PHRASES)
+                    print_and_play(did_not_understand_phrase)
+        except sr.RequestError:
+            print_and_play("No me he podido conectar con la API")
+        except sr.UnknownValueError:
+            if awake:
+                did_not_understand_phrase = get_random_phrase(
+                    DID_NOT_UNDERSTAND_PHRASES)
+                print_and_play(did_not_understand_phrase)
+        except Exception as e:
+            print_and_play(f"Error transcribiendo audio: {e}")
+
+    return phrase
+
+
+def listen_audio_to_text(awake=True):
     phrase = ''
     recognizer = sr.Recognizer()
     recognizer.pause_threshold = 0.6
     while True:
         with sr.Microphone() as source:
             recognizer.adjust_for_ambient_noise(source)
+            play_audio('audio/wake_detected.mp3')
             audio = recognizer.listen(source)
-            try:
-                textFromAudio = recognizer.recognize_google(
-                    audio, language="es-CO")
-                phrase = textFromAudio.lower()
-                if phrase is not None and phrase.strip() != '':
-                    if awake:
-                        print(f"{USER_TEXT_COLOR}Usuario: {phrase}{TEXT_MARKUP}")
-                    break
-                else:
-                    if awake:
-                        did_not_understand_phrase = get_random_phrase(
-                            DID_NOT_UNDERSTAND_PHRASES)
-                        print_and_play(did_not_understand_phrase)
-            except sr.RequestError:
-                print_and_play("No me he podido conectar con la API")
-            except sr.UnknownValueError:
+        try:
+            textFromAudio = recognizer.recognize_google(
+                audio, language="es-CO")
+            phrase = textFromAudio.lower()
+            if phrase is not None and phrase.strip() != '':
+                if awake:
+                    print(f"{USER_TEXT_COLOR}Usuario: {phrase}{TEXT_MARKUP}")
+                break
+            else:
                 if awake:
                     did_not_understand_phrase = get_random_phrase(
                         DID_NOT_UNDERSTAND_PHRASES)
                     print_and_play(did_not_understand_phrase)
-            except Exception as e:
-                print_and_play(f"Error transcribiendo audio: {e}")
+        except sr.RequestError:
+            print_and_play("No me he podido conectar con la API")
+        except sr.UnknownValueError:
+            if awake:
+                did_not_understand_phrase = get_random_phrase(
+                    DID_NOT_UNDERSTAND_PHRASES)
+                print_and_play(did_not_understand_phrase)
+        except Exception as e:
+            print_and_play(f"Error transcribiendo audio: {e}")
 
     return phrase
 
@@ -190,20 +243,21 @@ def clear_bing_text(response):
         if message["author"] == "bot":
             bot_response = message["text"]
     # Remove [^#^] citations in response
-    bot_response = re.sub('\[\^\d+\^\`\markdown\]', '', bot_response)
+    bot_response = re.sub('\[\^\d+<>\^`]', '', bot_response)
     return bot_response
 
 
-async def get_bing_response(prompt):
-    bot = await Chatbot.create(cookie_path='./settings/cookies.json')
+async def get_bing_response(prompt, bot):
     # bot = Chatbot(cookie_path='settings/cookies.json')
     print_system_output("Conectando con Bing...")
     try:
         response = await bot.ask(prompt=prompt, conversation_style=ConversationStyle.creative)
+        # print(response)
         bot_response = clear_bing_text(response)
         await bot.close()
     except Exception as e:
-        print_system_output("No se ha podido conectar con Bing Edge GPT get_bing_response: ", e)
+        print_system_output(
+            "No se ha podido conectar con Bing Edge GPT get_bing_response: ", e)
         print_and_play("No me he podido conectar con Bing Edge GPT")
         return False
     return bot_response
@@ -218,6 +272,7 @@ def get_chatgpt_response(prompt, messages=None):
     user_prompt = {"role": "user", "content": prompt}
     messages.append(user_prompt)
 
+    print_system_output("Conectando con Chat GPT...")
     # Send prompt to GPT-3.5-turbo API
     try:
         response = openai.ChatCompletion.create(
@@ -232,7 +287,8 @@ def get_chatgpt_response(prompt, messages=None):
             stop=["\nUser:"],
         )
     except Exception as e:
-        print_system_output("No se ha podido conectar con Chat GPT get_chatgpt_response: ", e)
+        print_system_output(
+            "No se ha podido conectar con Chat GPT get_chatgpt_response: ", e)
         print_and_play("No me he podido conectar con Chat GPT")
         return False
 
@@ -250,16 +306,19 @@ def get_chatgpt_response(prompt, messages=None):
 
 async def main():
     create_audio_folder()
-
     # Crear y ejecutar el hilo para verificar la tecla "F"
     # thread = threading.Thread(target=exit_key)
     # thread.start()
 
     while True:
         print_system_output("Di una palabra clave (chat, hola)...")
+        bot = await Chatbot.create(cookie_path='settings/cookies.json')
 
         while True:
-            wake_prompt = audio_to_text(False)
+            if AUDIO_CAPTURE_MODE == 'listen':
+                wake_prompt = listen_audio_to_text(False)
+            else:
+                wake_prompt = ptt_audio_to_text(False)
             wake_word = wake_word_from_phrase(wake_prompt)
             if wake_word == 'exit':
                 goodbye_phrase = get_random_phrase(FINISH_CHAT_PHRASES)
@@ -275,7 +334,10 @@ async def main():
         messages = None
 
         while True:
-            prompt = audio_to_text()
+            if AUDIO_CAPTURE_MODE == 'listen':
+                prompt = listen_audio_to_text()
+            else:
+                prompt = ptt_audio_to_text()
             wake_prompt = function_prompt_from_phrase(prompt)
             if wake_prompt == 'reset':
                 print_and_play('Empezando un nuevo chat...')
@@ -285,10 +347,10 @@ async def main():
                 continue
             else:
                 if wake_word == 'bing':
-                    break #TODO: EdgeGPT currently unavailable
-                    # bot_response = await get_bing_response(prompt)
-                    # if not bot_response:
-                    #     break
+                    # break  # TODO: EdgeGPT currently unavailable
+                    bot_response = await get_bing_response(prompt, bot)
+                    if not bot_response:
+                        break
                 else:
                     response = get_chatgpt_response(prompt, messages)
                     if not response:

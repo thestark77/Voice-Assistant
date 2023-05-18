@@ -5,6 +5,24 @@ BING_WAKE_WORDS = ["hola", "bing"]
 GPT_WAKE_WORDS = ["chat", "chad", "asistente"]
 RESET_WORDS = ["reiniciar", "restablecer", "reactivar",]
 EXIT_WORDS = ["adios", "adiós", "hasta luego", "chao", "nos vemos"]
+AUDIO_CAPTURE_MODES = {"listen": '\033[95m',
+                       "ptt": 'push_to_talk'}
+AUDIO_CAPTURE_MODE = AUDIO_CAPTURE_MODES["ptt"]
+PUSH_TO_TALK_KEY = 'space'
+RECORD_INTERVAL = 0.3
+B_COLORS = {"HEADER": '\033[95m',
+            "OKBLUE": '\033[94m',
+            "OKCYAN": '\033[96m',
+            "OKGREEN": '\033[92m',
+            "WARNING": '\033[93m',
+            "FAIL": '\033[91m',
+            "ENDC": '\033[0m',
+            "BOLD": '\033[1m',
+            "UNDERLINE": '\033[4m'}
+ASSISTANT_TEXT_COLOR = B_COLORS["OKBLUE"]
+USER_TEXT_COLOR = B_COLORS["HEADER"]
+TEXT_MARKUP = B_COLORS["ENDC"]
+SYSTEM_TEXT_COLOR = B_COLORS["OKGREEN"]
 ACTIVATION_PHRASES = ["¡Hola! ¿En qué puedo ayudarte hoy?",
                       "¡Saludos! Estoy aquí para asistirte",
                       "¡Encantada de estar a tu servicio!",
@@ -80,16 +98,3 @@ DID_NOT_UNDERSTAND_PHRASES = ["Perdona, no te entendí bien",
                               "Parece que hubo una desconexión momentánea",
                               "No pude captar tu mensaje",
                               ]
-B_COLORS = {"HEADER": '\033[95m',
-            "OKBLUE": '\033[94m',
-            "OKCYAN": '\033[96m',
-            "OKGREEN": '\033[92m',
-            "WARNING": '\033[93m',
-            "FAIL": '\033[91m',
-            "ENDC": '\033[0m',
-            "BOLD": '\033[1m',
-            "UNDERLINE": '\033[4m'}
-ASSISTANT_TEXT_COLOR = B_COLORS["OKBLUE"]
-USER_TEXT_COLOR = B_COLORS["HEADER"]
-TEXT_MARKUP = B_COLORS["ENDC"]
-SYSTEM_TEXT_COLOR = B_COLORS["OKGREEN"]
