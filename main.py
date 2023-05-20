@@ -18,6 +18,8 @@ from Bard import Chatbot as BardBot
 from dotenv import load_dotenv
 from settings.config import BING_WAKE_WORDS, GPT_WAKE_WORDS, EXIT_WORDS, FINISH_CHAT_PHRASES, RESET_WORDS, DID_NOT_UNDERSTAND_PHRASES, CONTINUE_CHAT_PHRASES, GPT_INITIAL_CONTEXT, ACTIVATION_PHRASES, TEXT_MARKUP, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, SYSTEM_TEXT_COLOR, SPEECH_SPEED, PUSH_TO_TALK_KEY, RECORD_INTERVAL, AUDIO_CAPTURE_MODE, BARD_WAKE_WORDS, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, BING_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BARD_ASSISTANT_NAME, FUNCTION_EXIT, FUNCTION_RESET, FUNCTION_ASSISTANT, BARD_INITIAL_CONTEXT, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, ASSISTANT_LANGUAGE, LANGUAGE_SETTINGS
 
+assistant_language_variable = ASSISTANT_LANGUAGE
+
 
 def handle_keyboard_interrupt(signal, frame):
     # Acciones a realizar al recibir una interrupción de teclado
@@ -91,7 +93,7 @@ def synthesize_speech(text, output_filename):
             TextType='ssml',
             Text=ssml_text,
             OutputFormat='mp3',
-            VoiceId=LANGUAGE_SETTINGS[ASSISTANT_LANGUAGE]["voice_id"],
+            VoiceId=LANGUAGE_SETTINGS[assistant_language_variable]["voice_id"],
             Engine='neural'
         )
     except Exception as e:
@@ -151,7 +153,7 @@ def ptt_audio_to_text(awake=True):
             audio_frame_data, sample_rate=44100, sample_width=2)
         try:
             textFromAudio = recognizer.recognize_google(
-                audio, language=LANGUAGE_SETTINGS[ASSISTANT_LANGUAGE]["language"])
+                audio, language=LANGUAGE_SETTINGS[assistant_language_variable]["language"])
             phrase = textFromAudio.lower()
             if phrase is not None and phrase.strip() != '':
                 if awake:
@@ -195,7 +197,7 @@ def listen_audio_to_text(awake=True):
             audio = recognizer.listen(source)
         try:
             textFromAudio = recognizer.recognize_google(
-                audio, language=LANGUAGE_SETTINGS[ASSISTANT_LANGUAGE]["language"])
+                audio, language=LANGUAGE_SETTINGS[assistant_language_variable]["language"])
             phrase = textFromAudio.lower()
             if phrase is not None and phrase.strip() != '':
                 if awake:
@@ -232,6 +234,8 @@ def listen_audio_to_text(awake=True):
 def wake_word_from_phrase(phrase):
     if any_word_of_list_in_phrase(EXIT_WORDS, phrase):
         wake_word = FUNCTION_EXIT
+    if any_word_of_list_in_phrase(RESET_WORDS, phrase):
+        wake_word = FUNCTION_RESET
     elif any_word_of_list_in_phrase(BARD_WAKE_WORDS, phrase):
         wake_word = BARD_ASSISTANT_NAME
     elif any_word_of_list_in_phrase(GPT_WAKE_WORDS, phrase):
@@ -368,7 +372,7 @@ def get_chatgpt_response(prompt, messages=None):
 def get_bard_response(prompt, bard_bot):
     print_system_output("Conectando con Google Bard...")
     initial_time = time.time()
-    if ASSISTANT_LANGUAGE != 'en':
+    if assistant_language_variable != 'en':
         prompt = translate_text(prompt, es_to_en=True)
     try:
         if not prompt:
@@ -380,7 +384,7 @@ def get_bard_response(prompt, bard_bot):
         print_and_play("No me he podido conectar con Bard")
         return False
     bard_response = clear_text(response['content'])
-    if ASSISTANT_LANGUAGE != 'en':
+    if assistant_language_variable != 'en':
         bard_response = translate_text(bard_response, es_to_en=False)
     if not bard_response:
         return False
@@ -402,13 +406,20 @@ def get_wake_word():
             wake_prompt = listen_audio_to_text(False)
         else:
             wake_prompt = ptt_audio_to_text(False)
+
         wake_word = wake_word_from_phrase(wake_prompt)
+
         if wake_word == FUNCTION_EXIT:
-            goodbye_phrase = get_random_phrase(FINISH_CHAT_PHRASES)
-            print_and_play(goodbye_phrase)
-            sys.exit(0)
+            execute_special_function(FUNCTION_EXIT)
+        elif wake_word == FUNCTION_RESET:
+            print_and_play('Empezando un nuevo chat...')
+            return FUNCTION_RESET
         elif wake_word != '':
             break
+        else:
+            not_wake_word_phrase = get_random_phrase(
+                NOT_WAKE_WORD_PHRASES)
+            print_and_play(not_wake_word_phrase)
     return wake_word
 
 
@@ -429,7 +440,9 @@ async def main():  # TODO: typing prompt feature
             f"Di una palabra clave ({BARD_WAKE_WORDS[0]}, {GPT_WAKE_WORDS[0]}, {BING_WAKE_WORDS[0]})...")
 
         wake_word = get_wake_word()
-
+        if wake_word == FUNCTION_RESET:
+            continue
+        
         activation_phrase = get_random_phrase(ACTIVATION_PHRASES)
         print_and_play(activation_phrase)
 

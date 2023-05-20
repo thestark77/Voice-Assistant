@@ -3,8 +3,13 @@
 # ----------------------------------------------------------------
 ASSISTANT_NAME = "Sharon"  # TODO: ¿Name?
 ASSISTANT_LANGUAGE = "es"  # es / en
-SPEECH_SPEED = 118
 AUDIO_CAPTURE_MODE = 'ppt'  # ppt / listen
+PUSH_TO_TALK_KEY = 'space'  # Key for push to talk
+SPEECH_SPEED = 118  # % talking speed [20% - 200%]
+
+# ----------------------------------------------------------------
+# System settings
+# ----------------------------------------------------------------
 RECORD_INTERVAL = 0.3
 LANGUAGE_SETTINGS = {  # TODO: Translate all phrases into English
     "es": {
@@ -19,14 +24,37 @@ LANGUAGE_SETTINGS = {  # TODO: Translate all phrases into English
 # ----------------------------------------------------------------
 # Phrases
 # ----------------------------------------------------------------
-BING_WAKE_WORDS = ["hola", "bing"]
-GPT_WAKE_WORDS = ["chat", "chad"]
-BARD_WAKE_WORDS = ["google", "bard", "asistente"]
+BING_WAKE_WORDS = ["internet", "bing", "online", "hello", "hola", ]
+GPT_WAKE_WORDS = ["chat", "chad", "gpt"]
+BARD_WAKE_WORDS = ["asistente", "assistant", "google", "bard"]
 
-RESET_WORDS = ["reiniciar", "restablecer", "reactivar",]
-EXIT_WORDS = ["adios", "adiós", "hasta luego", "chao", "nos vemos"]
+RESET_WORDS = ["reiniciar chat",
+               "reiniciar conversación",
+               "restablecer chat",
+               "restablecer conversación",]
+EXIT_WORDS = ["adios", "adiós", "hasta luego", "chao", "nos vemos luego"]
+CHANGE_LANGUAGE_WORDS_ES = ["cambiar idioma",
+                            "cambia el idioma",
+                            "cambiemos el idioma",
+                            "cambiamos el idioma",
+                            "cambia al inglés",
+                            "cambiemos a inglés",
+                            "habla en inglés",
+                            "háblame en inglés",
+                            "hablemos en inglés",
+                            "inglés por favor",
+                            "traducir al inglés",
+                            "prediero el inglés"]
+CHANGE_LANGUAGE_WORDS_EN = ["change language",
+                            "change the language",
+                            "switch to english",
+                            "speak in english",
+                            "speak to me in english",
+                            "english, please",
+                            "translate to english",
+                            "i prefer english"]
 GPT_INITIAL_CONTEXT = "Eres un asistente muy útil"
-BARD_INITIAL_CONTEXT = "You are my personal assistant, you are very helpful, please reply as such, and from now on in our conversation, every time you reply to me, you must do it in a very short, brief and concise paragraph and each of your responses from here on in this conversation must not exceed 600 characters" # This text must be alwais in English
+BARD_INITIAL_CONTEXT = "You are my personal assistant, you are very helpful, please reply as such, and from now on in our conversation, every time you reply to me, you must do it in a very short, brief and concise paragraph and each of your responses from here on in this conversation must not exceed 500 characters"  # This text must be alwais in English
 ACTIVATION_PHRASES = ["¡Hola! ¿En qué puedo ayudarte hoy?",
                       "¡Saludos! Estoy aquí para asistirte",
                       "¡Encantada de estar a tu servicio!",
@@ -129,7 +157,7 @@ WELCOME_PHRASES = [f"¡Hola hola! Soy {ASSISTANT_NAME}, tu asistente personal ca
                    f"¡Es hora de {ASSISTANT_NAME}-izar! Tu asistente personal está lista para darlo todo y hacer tu día genial",
                    f"¡{ASSISTANT_NAME}, el asistente más entusiasta del mundo, está aquí para animar tu día!",
                    f"¡Estoy aquí y emocionada por ayudarte! {ASSISTANT_NAME}, tu asistente personal en modo de máximo entusiasmo",
-                   f"¡{ASSISTANT_NAME} en acción! Listo/a para hacer tu vida más fácil y divertida",
+                   f"¡{ASSISTANT_NAME} en acción! Lista para hacer tu vida más fácil y divertida",
                    f"¡Bienvenido de nuevo! {ASSISTANT_NAME}, tu asistente favorita, lista para ser tu compañera virtual",
                    f"¡Hola! {ASSISTANT_NAME}, el asistente más alegre, está aquí para darte una cálida bienvenida",
                    f"¡Saludos! {ASSISTANT_NAME} está encendida y lista para ponerle un toque especial a tu día",
@@ -137,7 +165,7 @@ WELCOME_PHRASES = [f"¡Hola hola! Soy {ASSISTANT_NAME}, tu asistente personal ca
                    f"¡{ASSISTANT_NAME} al rescate! Tu asistente personal llena de energía, lista para enfrentar cualquier desafío",
                    f"¡Hola, hola! {ASSISTANT_NAME} está aquí para hacer brillar tu día con una mezcla de eficiencia y buen humor",
                    f"¡Saludos, amiguo! {ASSISTANT_NAME}, tu asistente personal, ya está aquí",
-                   f"¡Hola! {ASSISTANT_NAME} al habla, preparado/a para hacerte sonreír y solucionar tus problemas con estilo",
+                   f"¡Hola! {ASSISTANT_NAME} al habla, preparada para hacerte sonreír y solucionar tus problemas con estilo",
                    f"¡Bienvenido de vuelta! {ASSISTANT_NAME}, tu asistente personal con una actitud positiva y muchas ganas de ayudarte",
                    f"¡Hola! {ASSISTANT_NAME} está aquí para hacer que tus tareas sean más emocionantes",
                    f"¡Saludos! {ASSISTANT_NAME} se presenta con una mezcla de inteligencia artificial y buen ánimo",
@@ -148,7 +176,7 @@ WELCOME_PHRASES = [f"¡Hola hola! Soy {ASSISTANT_NAME}, tu asistente personal ca
                    f"¡Saludos! {ASSISTANT_NAME} se presenta con una sonrisa radiante y una actitud positiva, aunque la sonrisa te la quedo debiendo",
                    f"{ASSISTANT_NAME} al rescate! Tu asistente personal con una combinación perfecta de eficiencia y buen humor",
                    f"¡Estoy aquí y llena de energía positiva! {ASSISTANT_NAME}, tu compañera virtual, siempre a tu lado",
-                   f"{ASSISTANT_NAME} en acción! Listo/a para ser tu aliado tecnológico y tu fuente inagotable de buen rollo",
+                   f"{ASSISTANT_NAME} en acción! Lista para ser tu aliado tecnológico y tu fuente inagotable de buen rollo",
                    f"¡Hola! {ASSISTANT_NAME}, el asistente más entusiasta del mundo virtual, está a tu servicio",
                    f"¡Saludos! {ASSISTANT_NAME} está aquí para hacer de tu día algo extraordinario con su encanto tecnológico",
                    f"{ASSISTANT_NAME} al rescate! Tu asistente personal con el poder de convertir los desafíos en oportunidades",
@@ -165,10 +193,54 @@ FUNCTION_WEB = 'web'
 FUNCTION_EXIT = 'exit'
 FUNCTION_RESET = 'reset'
 FUNCTION_ASSISTANT = 'assistant'
+
+YOUTUBE_KEYWORDS = {
+    "es": ["reproduce en youtube",
+           "pon en youtube",
+           "escuchar en youtube",
+           "ver en youtube"],
+    "en": ["play on youtube",
+           "put on youtube",
+           "listen on youtube",
+           "i want watch on youtube"],
+}
+SPOTIFY_KEYWORDS = {
+    "es": ["reproduce en youtube",
+           "pon en youtube",
+           "escuchar en youtube",
+           "ver en youtube"],
+    "en": ["play on youtube",
+           "put on youtube",
+           "listen on youtube",
+           "i want watch on youtube"],
+}
+WIKIPEDIA_KEYWORDS = {
+    "es": ["",
+           "",
+           ""],
+    "en": ["",
+           "",
+           ""],
+}
+WOLFRAM_KEYWORDS = {
+    "es": ["",
+           "",
+           ""],
+    "en": ["",
+           "",
+           ""],
+}
+WEB_KEYWORDS = {
+    "es": ["",
+           "",
+           ""],
+    "en": ["",
+           "",
+           ""],
+}
 BING_ASSISTANT_NAME = 'bing'
 GPT_ASSISTANT_NAME = 'gpt'
 BARD_ASSISTANT_NAME = 'bard'
-PUSH_TO_TALK_KEY = 'space'
 B_COLORS = {"HEADER": '\033[95m',
             "OKBLUE": '\033[94m',
             "OKCYAN": '\033[96m',
