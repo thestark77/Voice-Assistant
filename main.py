@@ -16,7 +16,7 @@ import speech_recognition as sr
 from EdgeGPT import Chatbot, ConversationStyle
 from Bard import Chatbot as BardBot
 from dotenv import load_dotenv
-from settings.config import BING_WAKE_WORDS, GPT_WAKE_WORDS, EXIT_WORDS, FINISH_CHAT_PHRASES, RESET_WORDS, DID_NOT_UNDERSTAND_PHRASES, CONTINUE_CHAT_PHRASES, INITIAL_CONTEXT, ACTIVATION_PHRASES, TEXT_MARKUP, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, SYSTEM_TEXT_COLOR, SPEECH_SPEED, PUSH_TO_TALK_KEY, RECORD_INTERVAL, AUDIO_CAPTURE_MODE, BARD_WAKE_WORDS, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, BING_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BARD_ASSISTANT_NAME, FUNCTION_EXIT, FUNCTION_RESET, FUNCTION_ASSISTANT, BARD_CONTEXT, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES
+from settings.config import BING_WAKE_WORDS, GPT_WAKE_WORDS, EXIT_WORDS, FINISH_CHAT_PHRASES, RESET_WORDS, DID_NOT_UNDERSTAND_PHRASES, CONTINUE_CHAT_PHRASES, GPT_INITIAL_CONTEXT, ACTIVATION_PHRASES, TEXT_MARKUP, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, SYSTEM_TEXT_COLOR, SPEECH_SPEED, PUSH_TO_TALK_KEY, RECORD_INTERVAL, AUDIO_CAPTURE_MODE, BARD_WAKE_WORDS, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, BING_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BARD_ASSISTANT_NAME, FUNCTION_EXIT, FUNCTION_RESET, FUNCTION_ASSISTANT, BARD_INITIAL_CONTEXT, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, ASSISTANT_LANGUAGE, LANGUAGE_SETTINGS
 
 
 def handle_keyboard_interrupt(signal, frame):
@@ -91,7 +91,7 @@ def synthesize_speech(text, output_filename):
             TextType='ssml',
             Text=ssml_text,
             OutputFormat='mp3',
-            VoiceId='Lupe',
+            VoiceId=LANGUAGE_SETTINGS[ASSISTANT_LANGUAGE]["voice_id"],
             Engine='neural'
         )
     except Exception as e:
@@ -121,6 +121,7 @@ def create_audio_folder():
 
 def print_and_play(message):
     if message is not None and message.strip() != '':
+        # TODO: create a list with 2 arrays of text like this in both languages
         print(f"{ASSISTANT_TEXT_COLOR}Asistente: {message}{TEXT_MARKUP}")
         synthesize_speech(message, 'audio/response.mp3')
         play_audio('audio/response.mp3')
@@ -150,7 +151,7 @@ def ptt_audio_to_text(awake=True):
             audio_frame_data, sample_rate=44100, sample_width=2)
         try:
             textFromAudio = recognizer.recognize_google(
-                audio, language="es-CO")
+                audio, language=LANGUAGE_SETTINGS[ASSISTANT_LANGUAGE]["language"])
             phrase = textFromAudio.lower()
             if phrase is not None and phrase.strip() != '':
                 if awake:
@@ -194,7 +195,7 @@ def listen_audio_to_text(awake=True):
             audio = recognizer.listen(source)
         try:
             textFromAudio = recognizer.recognize_google(
-                audio, language="es-CO")
+                audio, language=LANGUAGE_SETTINGS[ASSISTANT_LANGUAGE]["language"])
             phrase = textFromAudio.lower()
             if phrase is not None and phrase.strip() != '':
                 if awake:
@@ -325,7 +326,7 @@ async def get_bing_response(prompt, bing_bot):
 def get_chatgpt_response(prompt, messages=None):
     if messages is None:
         context = {"role": "system",
-                   "content": INITIAL_CONTEXT}
+                   "content": GPT_INITIAL_CONTEXT}
         messages = [context]
 
     user_prompt = {"role": "user", "content": prompt}
@@ -364,31 +365,33 @@ def get_chatgpt_response(prompt, messages=None):
     return response
 
 
-def get_bard_response(spanish_prompt, bard_bot):
+def get_bard_response(prompt, bard_bot):
     print_system_output("Conectando con Google Bard...")
     initial_time = time.time()
-    english_prompt = translate_text(spanish_prompt, es_to_en=True)
+    if ASSISTANT_LANGUAGE != 'en':
+        prompt = translate_text(prompt, es_to_en=True)
     try:
-        if not english_prompt:
+        if not prompt:
             return False
-        response = bard_bot.ask(english_prompt)
+        response = bard_bot.ask(prompt)
     except Exception as e:
         print_system_output(
             "No se ha podido conectar con Bard get_bard_response: ", e)
         print_and_play("No me he podido conectar con Bard")
         return False
-    cleared_response = clear_text(response['content'])
-    spanish_response = translate_text(cleared_response, es_to_en=False)
-    if not spanish_response:
+    bard_response = clear_text(response['content'])
+    if ASSISTANT_LANGUAGE != 'en':
+        bard_response = translate_text(bard_response, es_to_en=False)
+    if not bard_response:
         return False
     final_time = time.time() - initial_time
     print(f"{SYSTEM_TEXT_COLOR}Tiempo de respuesta de Bard: {round(final_time, 1)} segundos{TEXT_MARKUP}")
-    return spanish_response
+    return bard_response
 
 
 def contextualize_bard(bard_bot):
     try:
-        response = bard_bot.ask(BARD_CONTEXT)
+        bard_bot.ask(BARD_INITIAL_CONTEXT)
     except Exception as e:
         pass
 
@@ -409,7 +412,7 @@ def get_wake_word():
     return wake_word
 
 
-async def main(): #TODO: typing prompt feature
+async def main():  # TODO: typing prompt feature
     create_audio_folder()
 
     while True:
@@ -418,7 +421,7 @@ async def main(): #TODO: typing prompt feature
         bing_bot = await Chatbot.create(cookie_path='settings/cookies.json')
         bard_bot = BardBot(BARD_TOKEN)
         contextualize_bard(bard_bot)
-        
+
         welcome_phrase = get_random_phrase(WELCOME_PHRASES)
         print_and_play(welcome_phrase)
 

@@ -1,43 +1,32 @@
-# Constants ----------------------------------------------------------------
-ASSISTANT_NAME = "Sharon"  # TODO:
-INITIAL_CONTEXT = "Eres un asistente muy útil"
+# ----------------------------------------------------------------
+# User settings
+# ----------------------------------------------------------------
+ASSISTANT_NAME = "Sharon"  # TODO: ¿Name?
+ASSISTANT_LANGUAGE = "es"  # es / en
 SPEECH_SPEED = 118
-RESET_WORDS = ["reiniciar", "restablecer", "reactivar",]
-EXIT_WORDS = ["adios", "adiós", "hasta luego", "chao", "nos vemos"]
-FUNCTION_YOUTUBE = 'youtube'
-FUNCTION_SPOTIFY = 'spotify'
-FUNCTION_WIKIPEDIA = 'wikipedia'
-FUNCTION_WOLFRAM = 'wolfram'
-FUNCTION_WEB = 'web'
-FUNCTION_EXIT = 'exit'
-FUNCTION_RESET = 'reset'
-FUNCTION_ASSISTANT = 'assistant'
+AUDIO_CAPTURE_MODE = 'ppt'  # ppt / listen
+RECORD_INTERVAL = 0.3
+LANGUAGE_SETTINGS = {  # TODO: Translate all phrases into English
+    "es": {
+        "language": "es-CO",
+        "voice_id": "Lupe",
+    },
+    "en": {
+        "language": "en-US",
+        "voice_id": "Ruth",
+    },
+}
+# ----------------------------------------------------------------
+# Phrases
+# ----------------------------------------------------------------
 BING_WAKE_WORDS = ["hola", "bing"]
 GPT_WAKE_WORDS = ["chat", "chad"]
 BARD_WAKE_WORDS = ["google", "bard", "asistente"]
-BING_ASSISTANT_NAME = 'bing'
-GPT_ASSISTANT_NAME = 'gpt'
-BARD_ASSISTANT_NAME = 'bard'
-BARD_SPECIFICATIONS = ". " + "responde de "
-AUDIO_CAPTURE_MODES = {"listen": 'listen',
-                       "ptt": 'push_to_talk'}
-AUDIO_CAPTURE_MODE = AUDIO_CAPTURE_MODES["ptt"]
-PUSH_TO_TALK_KEY = 'space'
-RECORD_INTERVAL = 0.3
-B_COLORS = {"HEADER": '\033[95m',
-            "OKBLUE": '\033[94m',
-            "OKCYAN": '\033[96m',
-            "OKGREEN": '\033[92m',
-            "WARNING": '\033[93m',
-            "FAIL": '\033[91m',
-            "ENDC": '\033[0m',
-            "BOLD": '\033[1m',
-            "UNDERLINE": '\033[4m'}
-ASSISTANT_TEXT_COLOR = B_COLORS["OKBLUE"]
-USER_TEXT_COLOR = B_COLORS["HEADER"]
-TEXT_MARKUP = B_COLORS["ENDC"]
-SYSTEM_TEXT_COLOR = B_COLORS["OKGREEN"]
-BARD_CONTEXT = "You are my personal assistant, you are very useful, as such, please respond in a very short, brief, concise, summarized paragraph and without further details to everything I tell you or ask from this moment on in the conversation."
+
+RESET_WORDS = ["reiniciar", "restablecer", "reactivar",]
+EXIT_WORDS = ["adios", "adiós", "hasta luego", "chao", "nos vemos"]
+GPT_INITIAL_CONTEXT = "Eres un asistente muy útil"
+BARD_INITIAL_CONTEXT = "You are my personal assistant, you are very helpful, please reply as such, and from now on in our conversation, every time you reply to me, you must do it in a very short, brief and concise paragraph and each of your responses from here on in this conversation must not exceed 600 characters" # This text must be alwais in English
 ACTIVATION_PHRASES = ["¡Hola! ¿En qué puedo ayudarte hoy?",
                       "¡Saludos! Estoy aquí para asistirte",
                       "¡Encantada de estar a tu servicio!",
@@ -165,3 +154,31 @@ WELCOME_PHRASES = [f"¡Hola hola! Soy {ASSISTANT_NAME}, tu asistente personal ca
                    f"{ASSISTANT_NAME} al rescate! Tu asistente personal con el poder de convertir los desafíos en oportunidades",
                    f"¡Hola, hola! {ASSISTANT_NAME} está aquí para iluminar tu día y hacerte sentir como la estrella que eres",
                    ]
+# ----------------------------------------------------------------
+# System constants
+# ----------------------------------------------------------------
+FUNCTION_YOUTUBE = 'youtube'
+FUNCTION_SPOTIFY = 'spotify'
+FUNCTION_WIKIPEDIA = 'wikipedia'
+FUNCTION_WOLFRAM = 'wolfram'
+FUNCTION_WEB = 'web'
+FUNCTION_EXIT = 'exit'
+FUNCTION_RESET = 'reset'
+FUNCTION_ASSISTANT = 'assistant'
+BING_ASSISTANT_NAME = 'bing'
+GPT_ASSISTANT_NAME = 'gpt'
+BARD_ASSISTANT_NAME = 'bard'
+PUSH_TO_TALK_KEY = 'space'
+B_COLORS = {"HEADER": '\033[95m',
+            "OKBLUE": '\033[94m',
+            "OKCYAN": '\033[96m',
+            "OKGREEN": '\033[92m',
+            "WARNING": '\033[93m',
+            "FAIL": '\033[91m',
+            "ENDC": '\033[0m',
+            "BOLD": '\033[1m',
+            "UNDERLINE": '\033[4m'}
+ASSISTANT_TEXT_COLOR = B_COLORS["OKBLUE"]
+USER_TEXT_COLOR = B_COLORS["HEADER"]
+TEXT_MARKUP = B_COLORS["ENDC"]
+SYSTEM_TEXT_COLOR = B_COLORS["OKGREEN"]
