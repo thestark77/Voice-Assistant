@@ -23,12 +23,15 @@ pip install openai
 pip install ffmpeg-python
 https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#shared-credentials-file
 https://us-east-1.console.aws.amazon.com/iamv2/home#/users/details/VoiceA?section=permissions
+
+
 pipupgrade --verbose --latest --yes
-
-
 python -m venv venv
 source venv/Scripts/activate
+python -m pip install -U pip wheel setuptools
 pip list
 pip install -r requirements.txt 
 deactivate
 poetry
+
+pip install granslate
