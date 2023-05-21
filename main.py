@@ -16,7 +16,7 @@ import speech_recognition as sr
 from EdgeGPT import Chatbot, ConversationStyle
 from Bard import Chatbot as BardBot
 from dotenv import load_dotenv
-from settings.config import BING_WAKE_WORDS, GPT_WAKE_WORDS, EXIT_WORDS, FINISH_CHAT_PHRASES, RESET_WORDS, DID_NOT_UNDERSTAND_PHRASES, CONTINUE_CHAT_PHRASES, GPT_INITIAL_CONTEXT, ACTIVATION_PHRASES, TEXT_MARKUP, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, SYSTEM_TEXT_COLOR, SPEECH_SPEED, PUSH_TO_TALK_KEY, RECORD_INTERVAL, AUDIO_CAPTURE_MODE, BARD_WAKE_WORDS, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, BING_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BARD_ASSISTANT_NAME, FUNCTION_EXIT, FUNCTION_RESET, FUNCTION_ASSISTANT, BARD_INITIAL_CONTEXT, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, ASSISTANT_LANGUAGE, LANGUAGE_SETTINGS, CHANGE_LANGUAGE_WORDS_ES, CHANGE_LANGUAGE_WORDS_EN, GPT_MAX_TOKENS, LOADING_PHRASES
+from settings.config import BING_WAKE_WORDS, GPT_WAKE_WORDS, EXIT_WORDS, FINISH_CHAT_PHRASES, RESET_WORDS, DID_NOT_UNDERSTAND_PHRASES, CONTINUE_CHAT_PHRASES, GPT_INITIAL_CONTEXT, ACTIVATION_PHRASES, TEXT_MARKUP, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, SYSTEM_TEXT_COLOR, SPEECH_SPEED, PUSH_TO_TALK_KEY, RECORD_INTERVAL, AUDIO_CAPTURE_MODE, BARD_WAKE_WORDS, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, BING_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BARD_ASSISTANT_NAME, FUNCTION_EXIT, FUNCTION_RESET, FUNCTION_ASSISTANT, BARD_INITIAL_CONTEXT, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, ASSISTANT_LANGUAGE, LANGUAGE_SETTINGS, CHANGE_LANGUAGE_WORDS_ES, CHANGE_LANGUAGE_WORDS_EN, GPT_MAX_TOKENS, LOADING_PHRASES, INPUT_MODE, YOUTUBE_KEYWORDS, SPOTIFY_KEYWORDS, WIKIPEDIA_KEYWORDS, WOLFRAM_KEYWORDS, WEB_KEYWORDS
 
 
 def handle_keyboard_interrupt(signal, frame):
@@ -225,12 +225,11 @@ def system_functions_from_phrase(phrase):
         sys.exit(0)
     elif any_word_of_list_in_phrase(RESET_WORDS, phrase):
         system_function = FUNCTION_RESET
-    elif any_word_of_list_in_phrase(CHANGE_LANGUAGE_WORDS_ES, phrase):
-        # system_function = 'en'  # set language to English
-        assistant_language_variable = "en"
-    elif any_word_of_list_in_phrase(CHANGE_LANGUAGE_WORDS_EN, phrase):
-        # system_function = 'es'  # set language to Spanish
-        assistant_language_variable = "es"
+    else:
+        if assistant_language_variable == 'en' and any_word_of_list_in_phrase(CHANGE_LANGUAGE_WORDS_EN, phrase):
+            assistant_language_variable = "es"
+        elif assistant_language_variable == 'es' and any_word_of_list_in_phrase(CHANGE_LANGUAGE_WORDS_ES, phrase):
+            assistant_language_variable = "en"
 
     return system_function
 
@@ -253,28 +252,44 @@ def wake_word_from_phrase(phrase):
 def function_prompt_from_phrase(phrase):
     system_function = system_functions_from_phrase(phrase)
     if system_function != '':
-        prompt = system_function
-    elif any_word_of_list_in_phrase(EXIT_WORDS, phrase):  # TODO:
-        prompt = FUNCTION_YOUTUBE
-    elif any_word_of_list_in_phrase(EXIT_WORDS, phrase):  # TODO:
-        prompt = FUNCTION_SPOTIFY
-    elif any_word_of_list_in_phrase(EXIT_WORDS, phrase):  # TODO:
-        prompt = FUNCTION_WIKIPEDIA
-    elif any_word_of_list_in_phrase(EXIT_WORDS, phrase):  # TODO:
-        prompt = FUNCTION_WOLFRAM
-    elif any_word_of_list_in_phrase(EXIT_WORDS, phrase):  # TODO:
-        prompt = FUNCTION_WEB
+        execute_function = system_function
+    elif check_words_in_order_in_a_phrase(phrase, YOUTUBE_KEYWORDS[ASSISTANT_LANGUAGE]):
+        execute_function = FUNCTION_YOUTUBE
+    elif check_words_in_order_in_a_phrase(phrase, SPOTIFY_KEYWORDS[ASSISTANT_LANGUAGE]):
+        execute_function = FUNCTION_SPOTIFY
+    elif check_words_in_order_in_a_phrase(phrase, WIKIPEDIA_KEYWORDS[ASSISTANT_LANGUAGE]):
+        execute_function = FUNCTION_WIKIPEDIA
+    elif check_words_in_order_in_a_phrase(phrase, WOLFRAM_KEYWORDS[ASSISTANT_LANGUAGE]):
+        execute_function = FUNCTION_WOLFRAM
+    elif check_words_in_order_in_a_phrase(phrase, WEB_KEYWORDS[ASSISTANT_LANGUAGE]):
+        execute_function = FUNCTION_WEB
     else:
-        prompt = FUNCTION_ASSISTANT
-    return prompt
+        execute_function = FUNCTION_ASSISTANT
+    return execute_function
 
 
-def execute_special_function(function):
-    if function == FUNCTION_EXIT:
-        goodbye_phrase = get_random_phrase(FINISH_CHAT_PHRASES)
-        print_and_play(goodbye_phrase)
-        sys.exit(0)
-    elif function == FUNCTION_YOUTUBE:  # TODO:
+def check_words_in_order_in_a_phrase(phrase, words_list):  # (frase1, frase2)
+    phrase = phrase.split()
+    words_list = words_list.split()
+
+    # Verificar si todas las palabras de frase2 están en frase1 en el mismo orden
+    if all(word in phrase for word in words_list):
+        # Verificar si el índice de cada palabra en frase1 es igual al índice correspondiente en frase2
+        if all(phrase.index(words_list[i]) == i for i in range(len(words_list))):
+            return True
+
+    return False
+
+
+# def open_youtube(prompt):
+# def open_spotify(prompt):
+# def open_wikipedia(prompt):
+# def open_wolfram(prompt):
+# def open_web(prompt):
+
+
+def execute_special_function(function, prompt):
+    if function == FUNCTION_YOUTUBE:  # TODO:
         prompt = 'youtube'
     elif function == FUNCTION_SPOTIFY:  # TODO:
         prompt = 'spotify'
@@ -358,6 +373,8 @@ def get_chatgpt_response(prompt, messages=None):
         print_system_output(
             "No se ha podido conectar con Chat GPT get_chatgpt_response: ", e)
         print_and_play("No me he podido conectar con Chat GPT")
+
+    if not response:
         return False
     bot_response = response["choices"][0]["message"]["content"]
 
@@ -402,18 +419,21 @@ def contextualize_bard(bard_bot):
         pass
 
 
-def capture_audio(awake):
-    if AUDIO_CAPTURE_MODE == 'listen':
-        text_from_audio = listen_audio_to_text(awake)
+def get_user_input(awake):
+    if INPUT_MODE == 'text':
+        user_input = input(f"{USER_TEXT_COLOR}Usuario: {TEXT_MARKUP}")
     else:
-        text_from_audio = ptt_audio_to_text(awake)
+        if AUDIO_CAPTURE_MODE == 'listen':
+            user_input = listen_audio_to_text(awake)
+        else:
+            user_input = ptt_audio_to_text(awake)
 
-    return text_from_audio
+    return user_input
 
 
 def get_wake_word():
     while True:
-        text_from_audio = capture_audio(False)
+        text_from_audio = get_user_input(False)
 
         wake_word = wake_word_from_phrase(text_from_audio)
 
@@ -429,7 +449,7 @@ def get_wake_word():
     return wake_word
 
 
-async def main():  # TODO: typing prompt feature
+async def main():
     create_audio_folder()
 
     while True:
@@ -466,14 +486,16 @@ async def main():  # TODO: typing prompt feature
         messages = None
 
         while True:
-            prompt = capture_audio(True)
+            prompt = get_user_input(True)
 
-            wake_prompt = function_prompt_from_phrase(prompt)
-            if wake_prompt == FUNCTION_RESET:
+            execute_function = function_prompt_from_phrase(prompt)
+            if execute_function == FUNCTION_RESET:
                 print_and_play('Empezando un nuevo chat...')
                 break
-            elif wake_prompt != FUNCTION_ASSISTANT:
-                execute_special_function(wake_prompt)
+            elif execute_function != FUNCTION_ASSISTANT:
+                execute_special_function(execute_function, prompt)
+                continue_phrase = get_random_phrase(CONTINUE_CHAT_PHRASES)
+                print_and_play(continue_phrase)
                 continue
             else:
                 if wake_word == BING_ASSISTANT_NAME:

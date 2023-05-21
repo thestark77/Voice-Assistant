@@ -5,6 +5,7 @@ ASSISTANT_NAME = "Sharon"  # TODO: ¿Name?
 ASSISTANT_LANGUAGE = "es"  # es / en
 AUDIO_CAPTURE_MODE = 'listen'  # ppt / listen
 PUSH_TO_TALK_KEY = 'space'  # Key for push to talk
+INPUT_MODE = 'voice' # voice / text
 SPEECH_SPEED = 118  # % talking speed [20% - 200%]
 ASISSTANT_RESPONSE_LENGTH = 500
 
@@ -223,9 +224,9 @@ FUNCTION_SPOTIFY = 'spotify'
 FUNCTION_WIKIPEDIA = 'wikipedia'
 FUNCTION_WOLFRAM = 'wolfram'
 FUNCTION_WEB = 'web'
+FUNCTION_ASSISTANT = 'assistant'
 FUNCTION_EXIT = 'exit'
 FUNCTION_RESET = 'reset'
-FUNCTION_ASSISTANT = 'assistant'
 FUNCTION_CHANGE_LANGUAGE = 'change_language'
 
 YOUTUBE_KEYWORDS = {
