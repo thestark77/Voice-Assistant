@@ -16,7 +16,7 @@ import speech_recognition as sr
 from EdgeGPT import Chatbot, ConversationStyle
 from Bard import Chatbot as BardBot
 from dotenv import load_dotenv
-from settings.config import DEFAULT_ASSISTANT_LANGUAGE, AUDIO_CAPTURE_MODE, PUSH_TO_TALK_KEY, INPUT_MODE, SPEECH_SPEED, GPT_MAX_TOKENS, RECORD_INTERVAL, LANGUAGE_SETTINGS, BING_WAKE_WORDS, GPT_WAKE_WORDS, BARD_WAKE_WORDS, EXIT_WORDS, RESET_WORDS, CHANGE_LANGUAGE_WORDS, YOUTUBE_KEYWORDS, SPOTIFY_KEYWORDS, WIKIPEDIA_KEYWORDS, WOLFRAM_KEYWORDS, WEB_KEYWORDS, GPT_INITIAL_CONTEXT, BARD_INITIAL_CONTEXT, LOADING_PHRASES, ACTIVATION_PHRASES, CONTINUE_CHAT_PHRASES, FINISH_CHAT_PHRASES, DID_NOT_UNDERSTAND_PHRASES, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, FUNCTION_ASSISTANT, FUNCTION_RESET, BARD_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BING_ASSISTANT_NAME, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, TEXT_MARKUP, SYSTEM_TEXT_COLOR, SYSTEM_TEXTS
+from settings.config import DEFAULT_ASSISTANT_LANGUAGE, AUDIO_CAPTURE_MODE, PUSH_TO_TALK_KEY, INPUT_MODE, SPEECH_SPEED, GPT_MAX_TOKENS, RECORD_INTERVAL, LANGUAGE_SETTINGS, BING_WAKE_WORDS, GPT_WAKE_WORDS, BARD_WAKE_WORDS, EXIT_WORDS, RESET_WORDS, CHANGE_LANGUAGE_WORDS, YOUTUBE_KEYWORDS, SPOTIFY_KEYWORDS, WIKIPEDIA_KEYWORDS, WOLFRAM_KEYWORDS, WEB_KEYWORDS, GPT_INITIAL_CONTEXT, BARD_INITIAL_CONTEXT, LOADING_PHRASES, ACTIVATION_PHRASES, CONTINUE_CHAT_PHRASES, FINISH_CHAT_PHRASES, DID_NOT_UNDERSTAND_PHRASES, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, FUNCTION_ASSISTANT, FUNCTION_RESET, BARD_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BING_ASSISTANT_NAME, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, TEXT_MARKUP, SYSTEM_TEXT_COLOR, SYSTEM_TEXTS, LANGUAGE_CHANGED_PHRASES, FUNCTION_CHANGE_LANGUAGE
 
 
 assistant_language = DEFAULT_ASSISTANT_LANGUAGE
@@ -215,7 +215,7 @@ def ptt_audio_to_text(awake=True):
         phrase = get_text_from_audio(audio, recognizer, awake)
         if phrase != '':
             break
-    print(phrase)  # TODO: remove this
+
     return phrase
 
 
@@ -248,28 +248,21 @@ def system_functions_from_phrase(phrase):
         system_function = FUNCTION_RESET
     else:
         if assistant_language == 'en' and any_word_of_list_in_phrase(CHANGE_LANGUAGE_WORDS[assistant_language], phrase):
+            change_language_phrase = get_random_phrase(
+                LANGUAGE_CHANGED_PHRASES[assistant_language])
+            print_and_play(change_language_phrase)
             assistant_language = "es"
+            system_function = FUNCTION_CHANGE_LANGUAGE
             # system_function = FUNCTION_RESET # Not necessary but recommended
         elif assistant_language == 'es' and any_word_of_list_in_phrase(CHANGE_LANGUAGE_WORDS[assistant_language], phrase):
+            change_language_phrase = get_random_phrase(
+                LANGUAGE_CHANGED_PHRASES[assistant_language])
+            print_and_play(change_language_phrase)
             assistant_language = "en"
+            system_function = FUNCTION_CHANGE_LANGUAGE
             # system_function = FUNCTION_RESET # Not necessary but recommended
 
     return system_function
-
-
-def wake_word_from_phrase(phrase):
-    system_function = system_functions_from_phrase(phrase)
-    if system_function != '':
-        wake_word = system_function
-    elif any_word_of_list_in_phrase(BARD_WAKE_WORDS, phrase):
-        wake_word = BARD_ASSISTANT_NAME
-    elif any_word_of_list_in_phrase(GPT_WAKE_WORDS, phrase):
-        wake_word = GPT_ASSISTANT_NAME
-    elif any_word_of_list_in_phrase(BING_WAKE_WORDS, phrase):
-        wake_word = BING_ASSISTANT_NAME
-    else:
-        wake_word = ''
-    return wake_word
 
 
 def check_words_in_order_in_a_phrase(phrase, words_list):  # (frase1, frase2)
@@ -291,6 +284,21 @@ def check_a_list_of_words_in_order_in__phrases(phrase, list_of_list_of_words):
         if key_phrase:
             return True
     return False
+
+
+def wake_word_from_phrase(phrase):
+    system_function = system_functions_from_phrase(phrase)
+    if system_function != '':
+        wake_word = system_function
+    elif any_word_of_list_in_phrase(BARD_WAKE_WORDS, phrase):
+        wake_word = BARD_ASSISTANT_NAME
+    elif any_word_of_list_in_phrase(GPT_WAKE_WORDS, phrase):
+        wake_word = GPT_ASSISTANT_NAME
+    elif any_word_of_list_in_phrase(BING_WAKE_WORDS, phrase):
+        wake_word = BING_ASSISTANT_NAME
+    else:
+        wake_word = ''
+    return wake_word
 
 
 def function_prompt_from_phrase(phrase):
@@ -476,6 +484,12 @@ def get_wake_word():
 
         if wake_word == FUNCTION_RESET:
             return FUNCTION_RESET
+        elif wake_word == FUNCTION_CHANGE_LANGUAGE:
+            welcome_phrase = get_random_phrase(
+                WELCOME_PHRASES[assistant_language])
+            parsed_welcome_phrase = welcome_phrase.replace(
+                "{}", LANGUAGE_SETTINGS[assistant_language]["assistant_name"])
+            print_and_play(parsed_welcome_phrase)
         elif wake_word != '':
             print_system_output(
                 f"{get_system_text('20')}{wake_word}")
@@ -512,9 +526,8 @@ async def main():
     create_audio_folder()
 
     while True:
-        assistant_name = LANGUAGE_SETTINGS[assistant_language]["assistant_name"]
         loading_phrase = get_random_phrase(LOADING_PHRASES[assistant_language])
-        print_and_play(loading_phrase)
+        print_system_output(loading_phrase)
 
         # Bots initialization
         bard_bot = start_bard()
@@ -525,7 +538,8 @@ async def main():
             print_system_output(get_system_text('21'))
 
         welcome_phrase = get_random_phrase(WELCOME_PHRASES[assistant_language])
-        parsed_welcome_phrase = welcome_phrase.replace("{}", assistant_name)
+        parsed_welcome_phrase = welcome_phrase.replace(
+            "{}", LANGUAGE_SETTINGS[assistant_language]["assistant_name"])
         print_and_play(parsed_welcome_phrase)
 
         print_system_output(

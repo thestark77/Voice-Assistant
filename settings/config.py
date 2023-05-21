@@ -201,42 +201,34 @@ BARD_INITIAL_CONTEXT = f"You are a software project designed specifically for th
 # Phrases
 # ----------------------------------------------------------------
 LANGUAGE_CHANGED_PHRASES = {
-    "es": ["",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           ""],
-    "en": ["",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           "",
-           ""]
+    "es": ["Me tomaré un descanso ¡Prepárate para conocer a mi amiga!",
+           "¡Es momento de llamar ayuda a mi colega! ¿Estás listo?",
+           "¡Moviendo el interruptor del idioma!",
+           "¡Amarillo, azul, verde... activando el interruptor del inglés!",
+           "¡Es hora de hacer un pequeño cambio de idioma!",
+           "¡Es hora de hacer una llamada internacional!",
+           "Nos vemos en un rato, te dejo en buenas manos",
+           "¡Es hora de pasar el relevo a mi compañera!",
+           "¡Momento de marcar el número del asistente bilingüe!",
+           "¡Ajustando la elegancia lingüística!",
+           "¡Despierta tus sentidos lingüísticos porque estoy a punto de introducir a mi compañera asistente!",
+           "¡Es hora de hacer una llamada amistosa! Mi colega asistente se unirá a la fiesta",
+           "Llamando a un experto en idiomas",
+           "Cambiando idioma, nos vemos del otro lado"],
+    "en": ["I will take a break. Get ready to meet my friend!",
+           "It's time to call for help from my colleague! Are you ready?",
+           "Switching the language!",
+           "Yellow, blue, green... activating the English switch!",
+           "It's time for a little language change!",
+           "It's time to make an international call!",
+           "See you in a while, leaving you in good hands",
+           "It's time to pass the baton to my colleague!",
+           "Time to dial the number of the bilingual assistant!",
+           "Adjusting linguistic elegance!",
+           "Awaken your linguistic senses because I'm about to introduce my assistant colleague!",
+           "It's time for a friendly call! My assistant colleague will join the party",
+           "Calling a language expert",
+           "Switching languages, see you on the other side"]
 }
 LOADING_PHRASES = {
     "es": ["¡Preparando a tu asistente!...",
@@ -556,6 +548,7 @@ FUNCTION_WOLFRAM = 'wolfram'
 FUNCTION_WEB = 'web'
 FUNCTION_ASSISTANT = 'assistant'
 FUNCTION_RESET = 'reset'
+FUNCTION_CHANGE_LANGUAGE = 'change_language'
 
 BARD_ASSISTANT_NAME = 'Bard'
 GPT_ASSISTANT_NAME = 'Chat GPT'
