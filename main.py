@@ -16,14 +16,14 @@ import speech_recognition as sr
 from EdgeGPT import Chatbot, ConversationStyle
 from Bard import Chatbot as BardBot
 from dotenv import load_dotenv
-from settings.config import BING_WAKE_WORDS, GPT_WAKE_WORDS, EXIT_WORDS, FINISH_CHAT_PHRASES, RESET_WORDS, DID_NOT_UNDERSTAND_PHRASES, CONTINUE_CHAT_PHRASES, GPT_INITIAL_CONTEXT, ACTIVATION_PHRASES, TEXT_MARKUP, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, SYSTEM_TEXT_COLOR, SPEECH_SPEED, PUSH_TO_TALK_KEY, RECORD_INTERVAL, AUDIO_CAPTURE_MODE, BARD_WAKE_WORDS, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, BING_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BARD_ASSISTANT_NAME, FUNCTION_EXIT, FUNCTION_RESET, FUNCTION_ASSISTANT, BARD_INITIAL_CONTEXT, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, ASSISTANT_LANGUAGE, LANGUAGE_SETTINGS
-
-assistant_language_variable = ASSISTANT_LANGUAGE
+from settings.config import BING_WAKE_WORDS, GPT_WAKE_WORDS, EXIT_WORDS, FINISH_CHAT_PHRASES, RESET_WORDS, DID_NOT_UNDERSTAND_PHRASES, CONTINUE_CHAT_PHRASES, GPT_INITIAL_CONTEXT, ACTIVATION_PHRASES, TEXT_MARKUP, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, SYSTEM_TEXT_COLOR, SPEECH_SPEED, PUSH_TO_TALK_KEY, RECORD_INTERVAL, AUDIO_CAPTURE_MODE, BARD_WAKE_WORDS, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, BING_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BARD_ASSISTANT_NAME, FUNCTION_EXIT, FUNCTION_RESET, FUNCTION_ASSISTANT, BARD_INITIAL_CONTEXT, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, ASSISTANT_LANGUAGE, LANGUAGE_SETTINGS, CHANGE_LANGUAGE_WORDS_ES, CHANGE_LANGUAGE_WORDS_EN, GPT_MAX_TOKENS, LOADING_PHRASES
 
 
 def handle_keyboard_interrupt(signal, frame):
     # Acciones a realizar al recibir una interrupción de teclado
-    print("Programa detenido por el usuario")
+    print_system_output("Programa detenido por el usuario")
+    goodbye_phrase = get_random_phrase(FINISH_CHAT_PHRASES)
+    print_and_play(goodbye_phrase)
     sys.exit(0)  # Finaliza el programa sin mostrar el traceback
 
 
@@ -32,6 +32,8 @@ signal.signal(signal.SIGINT, handle_keyboard_interrupt)
 
 # Carga las variables de entorno
 load_dotenv()
+
+assistant_language_variable = ASSISTANT_LANGUAGE
 
 GPT_API_KEY = os.environ['GPT_API_KEY']
 AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
@@ -129,8 +131,46 @@ def print_and_play(message):
         play_audio('audio/response.mp3')
 
 
-def ptt_audio_to_text(awake=True):
+def get_text_from_audio(audio, recognizer, awake=True):
     phrase = ''
+    returning_phrase = ''
+    try:
+        textFromAudio = recognizer.recognize_google(
+            audio, language=LANGUAGE_SETTINGS[assistant_language_variable]["language"])
+        phrase = textFromAudio.lower()
+        if phrase is not None and phrase.strip() != '':
+            if awake:
+                print(f"{USER_TEXT_COLOR}Usuario: {phrase}{TEXT_MARKUP}")
+
+            returning_phrase = phrase
+        else:
+            if awake:
+                did_not_understand_phrase = get_random_phrase(
+                    DID_NOT_UNDERSTAND_PHRASES)
+                print_and_play(did_not_understand_phrase)
+            else:
+                not_wake_word_phrase = get_random_phrase(
+                    NOT_WAKE_WORD_PHRASES)
+                print_and_play(not_wake_word_phrase)
+    except sr.RequestError:
+        print_and_play("No me he podido conectar con la API")
+    except sr.UnknownValueError:
+        if awake:
+            did_not_understand_phrase = get_random_phrase(
+                DID_NOT_UNDERSTAND_PHRASES)
+            print_and_play(did_not_understand_phrase)
+        else:
+            not_wake_word_phrase = get_random_phrase(NOT_WAKE_WORD_PHRASES)
+            print_and_play(not_wake_word_phrase)
+    except Exception as e:
+        print_system_output(
+            "Error transcribiendo audio: ", e)
+        print_and_play("Error transcribiendo audio")
+
+    return returning_phrase
+
+
+def ptt_audio_to_text(awake=True):
     recognizer = sr.Recognizer()
     while True:
         with sr.Microphone() as source:
@@ -147,41 +187,14 @@ def ptt_audio_to_text(awake=True):
                 audio_frame_data = audio_frame_data + audio_chunk.frame_data
                 if not keyboard.is_pressed(PUSH_TO_TALK_KEY):
                     break
-                # time.sleep(0.1)
 
         audio = sr.AudioData(
             audio_frame_data, sample_rate=44100, sample_width=2)
-        try:
-            textFromAudio = recognizer.recognize_google(
-                audio, language=LANGUAGE_SETTINGS[assistant_language_variable]["language"])
-            phrase = textFromAudio.lower()
-            if phrase is not None and phrase.strip() != '':
-                if awake:
-                    print(f"{USER_TEXT_COLOR}Usuario: {phrase}{TEXT_MARKUP}")
-                break
-            else:
-                if awake:
-                    did_not_understand_phrase = get_random_phrase(
-                        DID_NOT_UNDERSTAND_PHRASES)
-                    print_and_play(did_not_understand_phrase)
-                else:
-                    not_wake_word_phrase = get_random_phrase(
-                        NOT_WAKE_WORD_PHRASES)
-                    print_and_play(not_wake_word_phrase)
-        except sr.RequestError:
-            print_and_play("No me he podido conectar con la API")
-        except sr.UnknownValueError:
-            if awake:
-                did_not_understand_phrase = get_random_phrase(
-                    DID_NOT_UNDERSTAND_PHRASES)
-                print_and_play(did_not_understand_phrase)
-            else:
-                not_wake_word_phrase = get_random_phrase(NOT_WAKE_WORD_PHRASES)
-                print_and_play(not_wake_word_phrase)
-        except Exception as e:
-            print_system_output(
-                "Error transcribiendo audio: ", e)
-            print_and_play("Error transcribiendo audio")
+
+        phrase = get_text_from_audio(audio, recognizer, awake)
+        print(phrase, "ptt_audio_to_text")
+        if phrase != '':
+            break
 
     return phrase
 
@@ -195,47 +208,37 @@ def listen_audio_to_text(awake=True):
             recognizer.adjust_for_ambient_noise(source)
             play_audio('audio/wake_detected.mp3')
             audio = recognizer.listen(source)
-        try:
-            textFromAudio = recognizer.recognize_google(
-                audio, language=LANGUAGE_SETTINGS[assistant_language_variable]["language"])
-            phrase = textFromAudio.lower()
-            if phrase is not None and phrase.strip() != '':
-                if awake:
-                    print(f"{USER_TEXT_COLOR}Usuario: {phrase}{TEXT_MARKUP}")
-                else:
-                    not_wake_word_phrase = get_random_phrase(
-                        NOT_WAKE_WORD_PHRASES)
-                    print_and_play(not_wake_word_phrase)
-                break
-            else:
-                if awake:
-                    did_not_understand_phrase = get_random_phrase(
-                        DID_NOT_UNDERSTAND_PHRASES)
-                    print_and_play(did_not_understand_phrase)
-                else:
-                    not_wake_word_phrase = get_random_phrase(
-                        NOT_WAKE_WORD_PHRASES)
-                    print_and_play(not_wake_word_phrase)
-        except sr.RequestError:
-            print_and_play("No me he podido conectar con la API")
-        except sr.UnknownValueError:
-            if awake:
-                did_not_understand_phrase = get_random_phrase(
-                    DID_NOT_UNDERSTAND_PHRASES)
-                print_and_play(did_not_understand_phrase)
-        except Exception as e:
-            print_system_output(
-                "Error transcribiendo audio: ", e)
-            print_and_play("Error transcribiendo audio")
+
+        phrase = get_text_from_audio(audio, recognizer, awake)
+        if phrase != '':
+            break
 
     return phrase
 
 
-def wake_word_from_phrase(phrase):
+def system_functions_from_phrase(phrase):
+    global assistant_language_variable
+    system_function = ''
     if any_word_of_list_in_phrase(EXIT_WORDS, phrase):
-        wake_word = FUNCTION_EXIT
-    if any_word_of_list_in_phrase(RESET_WORDS, phrase):
-        wake_word = FUNCTION_RESET
+        goodbye_phrase = get_random_phrase(FINISH_CHAT_PHRASES)
+        print_and_play(goodbye_phrase)
+        sys.exit(0)
+    elif any_word_of_list_in_phrase(RESET_WORDS, phrase):
+        system_function = FUNCTION_RESET
+    elif any_word_of_list_in_phrase(CHANGE_LANGUAGE_WORDS_ES, phrase):
+        # system_function = 'en'  # set language to English
+        assistant_language_variable = "en"
+    elif any_word_of_list_in_phrase(CHANGE_LANGUAGE_WORDS_EN, phrase):
+        # system_function = 'es'  # set language to Spanish
+        assistant_language_variable = "es"
+
+    return system_function
+
+
+def wake_word_from_phrase(phrase):
+    system_function = system_functions_from_phrase(phrase)
+    if system_function != '':
+        wake_word = system_function
     elif any_word_of_list_in_phrase(BARD_WAKE_WORDS, phrase):
         wake_word = BARD_ASSISTANT_NAME
     elif any_word_of_list_in_phrase(GPT_WAKE_WORDS, phrase):
@@ -248,10 +251,9 @@ def wake_word_from_phrase(phrase):
 
 
 def function_prompt_from_phrase(phrase):
-    if any_word_of_list_in_phrase(EXIT_WORDS, phrase):
-        prompt = FUNCTION_EXIT
-    elif any_word_of_list_in_phrase(RESET_WORDS, phrase):
-        prompt = FUNCTION_RESET
+    system_function = system_functions_from_phrase(phrase)
+    if system_function != '':
+        prompt = system_function
     elif any_word_of_list_in_phrase(EXIT_WORDS, phrase):  # TODO:
         prompt = FUNCTION_YOUTUBE
     elif any_word_of_list_in_phrase(EXIT_WORDS, phrase):  # TODO:
@@ -343,7 +345,7 @@ def get_chatgpt_response(prompt, messages=None):
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=messages,
-            max_tokens=80,
+            max_tokens=GPT_MAX_TOKENS,
             # temperature=0.5,
             # frequency_penalty=0,
             # presence_penalty=0,
@@ -400,18 +402,22 @@ def contextualize_bard(bard_bot):
         pass
 
 
+def capture_audio(awake):
+    if AUDIO_CAPTURE_MODE == 'listen':
+        text_from_audio = listen_audio_to_text(awake)
+    else:
+        text_from_audio = ptt_audio_to_text(awake)
+
+    return text_from_audio
+
+
 def get_wake_word():
     while True:
-        if AUDIO_CAPTURE_MODE == 'listen':
-            wake_prompt = listen_audio_to_text(False)
-        else:
-            wake_prompt = ptt_audio_to_text(False)
+        text_from_audio = capture_audio(False)
 
-        wake_word = wake_word_from_phrase(wake_prompt)
+        wake_word = wake_word_from_phrase(text_from_audio)
 
-        if wake_word == FUNCTION_EXIT:
-            execute_special_function(FUNCTION_EXIT)
-        elif wake_word == FUNCTION_RESET:
+        if wake_word == FUNCTION_RESET:
             print_and_play('Empezando un nuevo chat...')
             return FUNCTION_RESET
         elif wake_word != '':
@@ -427,8 +433,9 @@ async def main():  # TODO: typing prompt feature
     create_audio_folder()
 
     while True:
-        print_system_output(
-            "Preparando a tu asistente...")  # TODO: Waking phrases wake keyyyy
+        loading_phrase = get_random_phrase(LOADING_PHRASES)
+        print_and_play(loading_phrase)
+
         bing_bot = await Chatbot.create(cookie_path='settings/cookies.json')
         bard_bot = BardBot(BARD_TOKEN)
         contextualize_bard(bard_bot)
@@ -442,17 +449,24 @@ async def main():  # TODO: typing prompt feature
         wake_word = get_wake_word()
         if wake_word == FUNCTION_RESET:
             continue
-        
+
+        if wake_word == 'bard':
+            print_system_output(
+                "Modelo seleccionado: Bard...")
+        elif wake_word == 'gpt':
+            print_system_output(
+                "Modelo seleccionado: Chat GPT...")
+        elif wake_word == 'bing':
+            print_system_output(
+                "Modelo seleccionado: Bing+GPT...")
+
         activation_phrase = get_random_phrase(ACTIVATION_PHRASES)
         print_and_play(activation_phrase)
 
         messages = None
 
         while True:
-            if AUDIO_CAPTURE_MODE == 'listen':
-                prompt = listen_audio_to_text()
-            else:
-                prompt = ptt_audio_to_text()
+            prompt = capture_audio(True)
 
             wake_prompt = function_prompt_from_phrase(prompt)
             if wake_prompt == FUNCTION_RESET:
@@ -464,24 +478,21 @@ async def main():  # TODO: typing prompt feature
             else:
                 if wake_word == BING_ASSISTANT_NAME:
                     bot_response = await get_bing_response(prompt, bing_bot)
-                    if not bot_response:
-                        break
                 elif wake_word == GPT_ASSISTANT_NAME:
                     response = get_chatgpt_response(prompt, messages)
-                    if not response:
-                        break
-                    bot_response = response["bot_response"]
-                    messages = response["messages"]
+                    if response:
+                        bot_response = response["bot_response"]
+                        messages = response["messages"]
                 elif wake_word == BARD_ASSISTANT_NAME:
                     bot_response = get_bard_response(prompt, bard_bot)
-                    if not bot_response:
-                        break
 
-            print_and_play(bot_response)
-            if not any_word_of_list_in_phrase(["?", "¿"], bot_response):
-                continue_phrase = get_random_phrase(CONTINUE_CHAT_PHRASES)
-                print_and_play(continue_phrase)
-                # time.sleep(0.5)
+            if not bot_response:
+                break
+            else:
+                print_and_play(bot_response)
+                if not any_word_of_list_in_phrase(["?", "¿"], bot_response):
+                    continue_phrase = get_random_phrase(CONTINUE_CHAT_PHRASES)
+                    print_and_play(continue_phrase)
 
 if __name__ == "__main__":
     asyncio.run(main())

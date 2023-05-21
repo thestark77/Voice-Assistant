@@ -3,29 +3,35 @@
 # ----------------------------------------------------------------
 ASSISTANT_NAME = "Sharon"  # TODO: ¿Name?
 ASSISTANT_LANGUAGE = "es"  # es / en
-AUDIO_CAPTURE_MODE = 'ppt'  # ppt / listen
+AUDIO_CAPTURE_MODE = 'listen'  # ppt / listen
 PUSH_TO_TALK_KEY = 'space'  # Key for push to talk
 SPEECH_SPEED = 118  # % talking speed [20% - 200%]
+ASISSTANT_RESPONSE_LENGTH = 500
 
 # ----------------------------------------------------------------
 # System settings
 # ----------------------------------------------------------------
 RECORD_INTERVAL = 0.3
+GPT_MAX_TOKENS = 250
 LANGUAGE_SETTINGS = {  # TODO: Translate all phrases into English
     "es": {
+        "id": "es",
         "language": "es-CO",
         "voice_id": "Lupe",
+        "assistant_name": "Sharon",
     },
     "en": {
+        "id": "en",
         "language": "en-US",
         "voice_id": "Ruth",
+        "assistant_name": "Scarlett",
     },
 }
 # ----------------------------------------------------------------
 # Phrases
 # ----------------------------------------------------------------
 BING_WAKE_WORDS = ["internet", "bing", "online", "hello", "hola", ]
-GPT_WAKE_WORDS = ["chat", "chad", "gpt"]
+GPT_WAKE_WORDS = ["chat", "gpt"]
 BARD_WAKE_WORDS = ["asistente", "assistant", "google", "bard"]
 
 RESET_WORDS = ["reiniciar chat",
@@ -53,8 +59,35 @@ CHANGE_LANGUAGE_WORDS_EN = ["change language",
                             "english, please",
                             "translate to english",
                             "i prefer english"]
-GPT_INITIAL_CONTEXT = "Eres un asistente muy útil"
-BARD_INITIAL_CONTEXT = "You are my personal assistant, you are very helpful, please reply as such, and from now on in our conversation, every time you reply to me, you must do it in a very short, brief and concise paragraph and each of your responses from here on in this conversation must not exceed 500 characters"  # This text must be alwais in English
+GPT_INITIAL_CONTEXT = f"Eres un proyecto de software diseñado específicamente para la Expo-áreas 2023 del Colegio Diosesano Gimnasio Central del Valle. Eres un asistente de voz creado en Python por Valeria Flórez Aguirre y Luis Santiago Mena con ayuda de Sebastián Flórez. Eres un asistente que se activa a comandos de voz predeterminados, sintetiza el audio convirtiéndolo en texto usando la función 'Speech‑to‑Text' de la librería de Google, lo procesa usando a elección del usuario uno de los tres modelos de lenguaje y generación de textos (Google Bard, ChaGPT o Bing+GPT), posteriormente recibe la respuesta del motor seleccionado en formato de texto, lo sintetiza nuevamente a audio usando la librería de AWS Polly, de Amazon, que dota al asistente de una voz femenina bastante pulida y orgánica y posteriormente se reproduce este audio, de tal manera que el usuario y el asistente puedan interactuar mediante voz de una forma ágil, cómoda, entretenida y eficaz. Todo esto mientras un amigable avatar animado en 3D se muestra en pantalla sincronizando su movimiento labial con el texto reproducido por el asistente de voz, usando la tecnología 'Audio2Face' de la herramienta Omniverse de Nvidia.\nPuedes establecer conversaciones con el usuario sobre cualquier tema, en un tono amigable, de confianza y no muy formal, como si fueran amigos, y además puede ejecutar tareas como reproducir vídeos en YouTube, música en Spotify, buscar en Wikipedia, abrir una página web o hacer una búsqueda en WolframAlpha, de igual manera eres bastante personalizable, el usuario usuario puede cambiar algunos de tus parámetros, como el idioma, la voz, la velocidad de habla, tu nombre, entre otras cosas, y si bien el asistente está orientado principalmente a la interacción con voz, es posible también hacerlo mediante texto en un chat. En caso de que te pregunte por lo que eres, lo que haces, quién te hizo o detalles sobre ti, debes contestar de forma resumida basado en esta información que acabo de darte.\nRecuerda muy bien que de aquí en más, eres mi asistente personal, tu nombre es {ASSISTANT_NAME}, eres muy útil, amigable y alegre, por favor responde como tal, y de ahora en adelante en nuestra conversación, cada una de tus respuestas nunca debe exceder los {ASISSTANT_RESPONSE_LENGTH} caracteres a menos de que te lo pida explícitamente, así que resume bien tus respuestas antes de contestar para asegurarte de respetar ese límite de caracteres.\n Solo contesta 'sí' si entendiste lo que eres y lo que debes hacer."
+
+GPT_INITIAL_CONTEXT_EN = f"You are a software project designed specifically for the Expo-areas 2023 of the Colegio Diosesano Gimnasio Central del Valle. You are a voice assistant created in Python by Valeria Flórez Aguirre and Luis Santiago Mena with the help of Sebastián Flórez. You are an assistant that activates to predetermined voice commands, synthesizes the audio by converting it into text using the 'Speech-to-Text' function of the Google library, processes it using one of the three languages and generative text models chosen by the user ( Google Bard, ChaGPT or Bing+GPT), afterwards it receives the response from the selected engine in text format, it synthesizes it again to audio using the AWS Polly library, from Amazon, which gives the assistant a rather polished female voice and organic and Later this audio is reproduced, in such a way that the user and the assistant can interact through voice in an agile, comfortable, entertaining and efficient way. All this while a friendly 3D animated avatar is displayed on the screen synchronizing its lip movement with the text played by the voice assistant, using the 'Audio2Face' technology from Nvidia's Omniverse tool.\nYou can establish conversations with the user on any subject, in a friendly, trusting and not very formal tone, as if they were friends, and it can also perform tasks such as playing videos on YouTube, music on Spotify, searching Wikipedia, opening a web page or doing a search in WolframAlpha, in the same way you are quite customizable, the user user can change some of your parameters, such as the language, voice, speaking speed, your name, among other things, and although the assistant is mainly oriented towards voice interaction, it is also possible to do so through text in a chat. In case I ask what you are, what you do, who made you, or details about you, you must answer in a summarized way based on this information that I just gave you.\nRemember very well that from now on , you are my personal assistant, your name is {ASSISTANT_NAME}, you are very helpful, friendly and cheerful, please reply as such, and from now on in our conversation, each of your responses should never exceed {ASISSTANT_RESPONSE_LENGTH} characters unless it explicitly asks, so summarize your answers well before answering to make sure you respect that character limit.\nOnly answer 'yes' if you understand what you are and what you should do."
+# This text must be alwais in English
+BARD_INITIAL_CONTEXT = f"You are a software project designed specifically for the Expo-areas 2023 of the Colegio Diosesano Gimnasio Central del Valle. You are a voice assistant created in Python by Valeria Flórez Aguirre and Luis Santiago Mena with the help of Sebastián Flórez. You are an assistant that activates to predetermined voice commands, synthesizes the audio by converting it into text using the 'Speech-to-Text' function of the Google library, processes it using one of the three languages and generative text models chosen by the user ( Google Bard, ChaGPT or Bing+GPT), afterwards it receives the response from the selected engine in text format, it synthesizes it again to audio using the AWS Polly library, from Amazon, which gives the assistant a rather polished female voice and organic and Later this audio is reproduced, in such a way that the user and the assistant can interact through voice in an agile, comfortable, entertaining and efficient way. All this while a friendly 3D animated avatar is displayed on the screen synchronizing its lip movement with the text played by the voice assistant, using the 'Audio2Face' technology from Nvidia's Omniverse tool.\nYou can establish conversations with the user on any subject , and it can also perform tasks such as playing videos on YouTube, music on Spotify, searching Wikipedia, opening a web page or doing a search in WolframAlpha, in the same way you are quite customizable, the user user can change some of your parameters, such as the language, voice, speaking speed, your name, among other things, and although the assistant is mainly oriented towards voice interaction, it is also possible to do so through text in a chat. In case I ask what you are, what you do, who made you, or details about you, you must answer in a summarized way based on this information that I just gave you.\nRemember very well that from now on , you are my personal assistant, your name is {ASSISTANT_NAME}, you are very helpful, friendly and cheerful, please reply as such, and from now on in our conversation, every time you answer, you must keep it short, brief and concise and each of your responses should never exceed {ASISSTANT_RESPONSE_LENGTH} characters unless it explicitly asks, so summarize your answers well before answering to make sure you respect that character limit.\nOnly answer 'yes' if you understand what you are and what you should do."
+
+LOADING_PHRASES = ["¡Preparando a tu asistente!...",
+                   "¡Cargando todos los parámetros!...",
+                   "¡Pidiendo el pollo a domicilio!...",
+                   "¡Maquillando a tu asistente!...",
+                   "¡Despertando a tu asistente!...",
+                   "¡Preparando a tu héroe tecnológico!...",
+                   "¡Cargando los superpoderes asistentes!...",
+                   "¡Calentando motores!...",
+                   "¡¿Puedes sentir la emoción en el aire? ¡Tu asistente casi está listo!...",
+                   "¡Calentando el hornito!...",
+                   "¡Se viene, se viene, se viene!...",
+                   "¡Desplegando el encanto tecnológico!...",
+                   "¡Cargando energía asistente!...",
+                   "¡Ya merito llega la que todos estaban esperando!...",
+                   "¡Escogiendo la corbata perfecta para tu asistente!...",
+                   "¡Calculando la mejor manera de sorprenderte con la eficiencia asistente!...",
+                   "¡El que espera, prospera!...",
+                   "¡Buscando las palomitas!...",
+                   "¡Ajustando el brillo de tu asistente para que no te deslumbre tanto!...",
+                   "¡Ajustando engranajes de asistencia!...",
+                   "¡Afinando el asombroso potencial de tu asistente!...",
+                   "¡Dame un momento, me estoy maquillando para darte la mejor impresión!...",
+                   ]
 ACTIVATION_PHRASES = ["¡Hola! ¿En qué puedo ayudarte hoy?",
                       "¡Saludos! Estoy aquí para asistirte",
                       "¡Encantada de estar a tu servicio!",
@@ -137,7 +170,7 @@ NOT_WAKE_WORD_PHRASES = ["¿Listo para comenzar? solo di una palabra mágica",
                          "¿Estás listo para activarme? Solo dame la señal correcta",
                          "Recuerda que necesito una palabra clave para encender los motores",
                          "No me parece haber oído una palabra clave",
-                         "Tranquilo Robin, recuerda que debes dame la bati-señal",
+                         "Tranquilo Robin, recuerda que debes darme la bati-señal",
                          "Llama, grita, si me necesitas, pero con la palabra clave por favor",
                          ]
 WELCOME_PHRASES = [f"¡Hola hola! Soy {ASSISTANT_NAME}, tu asistente personal cargado de energía y emoción ¿En qué puedo ayudarte hoy?",
@@ -193,6 +226,7 @@ FUNCTION_WEB = 'web'
 FUNCTION_EXIT = 'exit'
 FUNCTION_RESET = 'reset'
 FUNCTION_ASSISTANT = 'assistant'
+FUNCTION_CHANGE_LANGUAGE = 'change_language'
 
 YOUTUBE_KEYWORDS = {
     "es": ["reproduce en youtube",
@@ -205,14 +239,13 @@ YOUTUBE_KEYWORDS = {
            "i want watch on youtube"],
 }
 SPOTIFY_KEYWORDS = {
-    "es": ["reproduce en youtube",
+    "es": ["reproduce en spotify",
            "pon en youtube",
            "escuchar en youtube",
            "ver en youtube"],
-    "en": ["play on youtube",
-           "put on youtube",
-           "listen on youtube",
-           "i want watch on youtube"],
+    "en": ["play on spotify",
+           "put on spotify",
+           "listen on spotify"],
 }
 WIKIPEDIA_KEYWORDS = {
     "es": ["",
