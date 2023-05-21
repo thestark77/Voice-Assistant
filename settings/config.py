@@ -18,12 +18,14 @@ RECORD_INTERVAL = 0.3
 LANGUAGE_SETTINGS = {
     "es": {
         "id": "es",
+        "name": "español",
         "language": "es-CO",
         "voice_id": "Lupe",
         "assistant_name": SPANISH_ASSISTANT_NAME,
     },
     "en": {
         "id": "en",
+        "name": "english",
         "language": "en-US",
         "voice_id": "Ruth",
         "assistant_name": ENGLISH_ASSISTANT_NAME,
@@ -133,27 +135,55 @@ WOLFRAM_KEYWORDS = {
            "seek for wolfram",],
 }
 WEB_KEYWORDS = {
-    "es": ["ve a .",
-           "abre .",
-           "navega a .",
-           ". navegador",
-           "navegador .",
-           "abre punto",
-           "navega a punto",
-           "punto navegador",
-           "navegador punto"],
-    "en": ["go to .",
-           "open .",
-           "navigate to .",
-           "browse .",
-           ". browser",
-           "browser .",
-           "go to dot",
-           "open dot",
-           "navigate a dot",
-           "browse a dot",
-           "dot navegador",
-           "navegador dot"],
+    "es": {
+        "keywords": ["ve a .",
+                     "abre .",
+                     "navega a .",
+                     ". navegador",
+                     "navegador .",
+                     "abre punto",
+                     "navega a punto",
+                     "punto navegador",
+                     "navegador punto"],
+        "remove": ["ve",
+                   "a",
+                   "abre",
+                   "navegador",
+                   "navega",
+                   "punto",
+                   "a",
+                   "página",
+                   " a ",
+                   " de ",
+                   " "]
+    },
+
+    "en": {
+        "keywords": ["go to .",
+                     "open .",
+                     "navigate to .",
+                     "browse .",
+                     ". browser",
+                     "browser .",
+                     "go to dot",
+                     "open dot",
+                     "navigate a dot",
+                     "browse a dot",
+                     "dot navegador",
+                     "navegador dot"],
+        "remove": ["go to .",
+                   "open .",
+                   "navigate to .",
+                   "browse .",
+                   ". browser",
+                   "browser .",
+                   "go to dot",
+                   "open dot",
+                   "navigate a dot",
+                   "browse a dot",
+                   "dot navegador",
+                   "navegador dot"],
+    },
 }
 
 # ----------------------------------------------------------------
@@ -170,6 +200,44 @@ BARD_INITIAL_CONTEXT = f"You are a software project designed specifically for th
 # ----------------------------------------------------------------
 # Phrases
 # ----------------------------------------------------------------
+LANGUAGE_CHANGED_PHRASES = {
+    "es": ["",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           ""],
+    "en": ["",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           "",
+           ""]
+}
 LOADING_PHRASES = {
     "es": ["¡Preparando a tu asistente!...",
            "¡Cargando todos los parámetros!...",
@@ -489,9 +557,9 @@ FUNCTION_WEB = 'web'
 FUNCTION_ASSISTANT = 'assistant'
 FUNCTION_RESET = 'reset'
 
-BARD_ASSISTANT_NAME = 'bard'
-GPT_ASSISTANT_NAME = 'gpt'
-BING_ASSISTANT_NAME = 'bing'
+BARD_ASSISTANT_NAME = 'Bard'
+GPT_ASSISTANT_NAME = 'Chat GPT'
+BING_ASSISTANT_NAME = 'Bing GPT'
 
 # ----------------------------------------------------------------
 # Command prompt colors
@@ -509,3 +577,57 @@ ASSISTANT_TEXT_COLOR = B_COLORS["OKBLUE"]
 USER_TEXT_COLOR = B_COLORS["HEADER"]
 TEXT_MARKUP = B_COLORS["ENDC"]
 SYSTEM_TEXT_COLOR = B_COLORS["OKGREEN"]
+
+# ----------------------------------------------------------------
+# System texts
+# ----------------------------------------------------------------
+SYSTEM_TEXTS = {
+    "es": {
+        "1": "Programa detenido por el usuario",
+        "2": "Error al conectar con el traductor de Google",
+        "3": "Error sintetizando voz",
+        "4": "Asistente: ",
+        "5": "Usuario: ",
+        "6": "No me he podido conectar con la API de Speech Recognition",
+        "7": "Error transcribiendo audio",
+        "8": f"Conectando con {BING_ASSISTANT_NAME}...",
+        "9": f"Tiempo de respuesta de {BING_ASSISTANT_NAME}: ",
+        "10": "segundos",
+        "11": f"No me he podido conectar con {BING_ASSISTANT_NAME}",
+        "12": f"Conectando con {GPT_ASSISTANT_NAME}...",
+        "13": f"Tiempo de respuesta de {GPT_ASSISTANT_NAME}: ",
+        "14": f"No me he podido conectar con {GPT_ASSISTANT_NAME}",
+        "15": f"Conectando con {BARD_ASSISTANT_NAME}...",
+        "16": f"No me he podido conectar con {BARD_ASSISTANT_NAME}",
+        "17": f"Tiempo de respuesta de {BARD_ASSISTANT_NAME}: ",
+        "18": "Empezando un nuevo chat...",
+        "19": "Di una palabra clave: ",
+        "20": "Modelo seleccionado: ",
+        "21": f"{BING_ASSISTANT_NAME} no está disponible, intenta reiniciar la conversación para intentarlo de nuevo",
+        "22": f"{BARD_ASSISTANT_NAME} no está disponible, intenta reiniciar la conversación para intentarlo de nuevo",
+    },
+    "en": {
+        "1": "Program stopped by user",
+        "2": "Error connecting to Google translator",
+        "3": "Error synthesizing speech",
+        "4": "Assistant: ",
+        "5": "User: ",
+        "6": "Could not connect to the Speech Recognition API",
+        "7": "Error transcribing audio",
+        "8": f"Connecting with {BING_ASSISTANT_NAME}...",
+        "9": f"{BING_ASSISTANT_NAME} response time: ",
+        "10": "seconds",
+        "11": f"Couldn't connect to Bing {BING_ASSISTANT_NAME}",
+        "12": f"Connecting with {GPT_ASSISTANT_NAME}...",
+        "13": f"{GPT_ASSISTANT_NAME} response time: ",
+        "14": f"Couldn't connect to {GPT_ASSISTANT_NAME}",
+        "15": f"Connecting with Google {BARD_ASSISTANT_NAME}...",
+        "16": f"Couldn't connect to {BARD_ASSISTANT_NAME}",
+        "17": f"{BARD_ASSISTANT_NAME} response time: ",
+        "18": "Starting a new chat...",
+        "19": "Say a keyword: ",
+        "20": "Selected model: ",
+        "21": f"{BING_ASSISTANT_NAME} is not available try to restart the conversation to try again",
+        "22": f"{BARD_ASSISTANT_NAME} is not available try to restart the conversation to try again",
+    }
+}
