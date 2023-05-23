@@ -12,14 +12,50 @@ import pydub
 import pyaudio
 from deep_translator import GoogleTranslator as Translator
 from pydub import playback
+import azure.cognitiveservices.speech as speechsdk
+from azure.cognitiveservices.speech.audio import AudioOutputConfig
 import speech_recognition as sr
 from EdgeGPT import Chatbot, ConversationStyle
 from Bard import Chatbot as BardBot
 from dotenv import load_dotenv
-from settings.config import DEFAULT_ASSISTANT_LANGUAGE, AUDIO_CAPTURE_MODE, PUSH_TO_TALK_KEY, INPUT_MODE, SPEECH_SPEED, GPT_MAX_TOKENS, RECORD_INTERVAL, LANGUAGE_SETTINGS, BING_WAKE_WORDS, GPT_WAKE_WORDS, BARD_WAKE_WORDS, EXIT_WORDS, RESET_WORDS, CHANGE_LANGUAGE_WORDS, YOUTUBE_KEYWORDS, SPOTIFY_KEYWORDS, WIKIPEDIA_KEYWORDS, WOLFRAM_KEYWORDS, WEB_KEYWORDS, GPT_INITIAL_CONTEXT, BARD_INITIAL_CONTEXT, LOADING_PHRASES, ACTIVATION_PHRASES, CONTINUE_CHAT_PHRASES, FINISH_CHAT_PHRASES, DID_NOT_UNDERSTAND_PHRASES, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, FUNCTION_ASSISTANT, FUNCTION_RESET, BARD_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BING_ASSISTANT_NAME, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, TEXT_MARKUP, SYSTEM_TEXT_COLOR, SYSTEM_TEXTS, LANGUAGE_CHANGED_PHRASES, FUNCTION_CHANGE_LANGUAGE
+from settings.config import DEFAULT_ASSISTANT_LANGUAGE, AUDIO_CAPTURE_MODE, PUSH_TO_TALK_KEY, INPUT_MODE, SPEECH_SPEED, GPT_MAX_TOKENS, RECORD_INTERVAL, LANGUAGE_SETTINGS, BING_WAKE_WORDS, GPT_WAKE_WORDS, BARD_WAKE_WORDS, EXIT_WORDS, RESET_WORDS, CHANGE_LANGUAGE_WORDS, YOUTUBE_KEYWORDS, SPOTIFY_KEYWORDS, WIKIPEDIA_KEYWORDS, WOLFRAM_KEYWORDS, WEB_KEYWORDS, GPT_INITIAL_CONTEXT, BARD_INITIAL_CONTEXT, LOADING_PHRASES, ACTIVATION_PHRASES, CONTINUE_CHAT_PHRASES, FINISH_CHAT_PHRASES, DID_NOT_UNDERSTAND_PHRASES, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, FUNCTION_ASSISTANT, FUNCTION_RESET, BARD_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BING_ASSISTANT_NAME, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, TEXT_MARKUP, SYSTEM_TEXT_COLOR, SYSTEM_TEXTS, LANGUAGE_CHANGED_PHRASES, FUNCTION_CHANGE_LANGUAGE, ASISSTANT_RESPONSE_LENGTH, RESPONSE_LENGTH_MARGIN
 
+# Carga las variables de entorno
+load_dotenv()
 
 assistant_language = DEFAULT_ASSISTANT_LANGUAGE
+
+GPT_API_KEY = os.environ['GPT_API_KEY']
+AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
+AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
+BARD_TOKEN = os.environ['BARD_TOKEN']
+# Initialize the OpenAI API
+openai.api_key = GPT_API_KEY
+
+# Initialize the AWS BOTO3 API
+
+session = boto3.Session(
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY
+)
+
+azure_speech_config = speechsdk.SpeechConfig(
+    subscription="6b575ac067164d4fb90291d64cd6edfb",
+    region="eastus",
+    # speech_recognition_language=system_language,
+)
+
+
+def handle_keyboard_interrupt(signal, frame):
+    # Acciones a realizar al recibir una interrupción de teclado
+    print_system_output(get_system_text('1'))
+    goodbye_phrase = get_random_phrase(FINISH_CHAT_PHRASES[assistant_language])
+    print_and_play(goodbye_phrase)
+    sys.exit(0)  # Finaliza el programa sin mostrar el traceback
+
+
+# Configurar el manejador de la señal de interrupción de teclado
+signal.signal(signal.SIGINT, handle_keyboard_interrupt)
 
 
 def get_system_text(system_text_id, aditional_string=''):
@@ -38,34 +74,6 @@ def get_urls_from_phrase(phrase):
     urls = re.findall(pattern, phrase)
 
     return urls
-
-
-def handle_keyboard_interrupt(signal, frame):
-    # Acciones a realizar al recibir una interrupción de teclado
-    print_system_output(get_system_text('1'))
-    goodbye_phrase = get_random_phrase(FINISH_CHAT_PHRASES[assistant_language])
-    print_and_play(goodbye_phrase)
-    sys.exit(0)  # Finaliza el programa sin mostrar el traceback
-
-
-# Configurar el manejador de la señal de interrupción de teclado
-signal.signal(signal.SIGINT, handle_keyboard_interrupt)
-
-# Carga las variables de entorno
-load_dotenv()
-
-GPT_API_KEY = os.environ['GPT_API_KEY']
-AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
-AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
-BARD_TOKEN = os.environ['BARD_TOKEN']
-# Initialize the OpenAI API
-openai.api_key = GPT_API_KEY
-
-# Initialize the AWS BOTO3 API
-session = boto3.Session(
-    aws_access_key_id=AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=AWS_SECRET_ACCESS_KEY
-)
 
 
 def translate_text(text, es_to_en=True):
@@ -366,6 +374,19 @@ def clear_bing_text(response):
     return bot_response
 
 
+def cut_text(text):
+    print(len(text))
+    if len(text) > ASISSTANT_RESPONSE_LENGTH:
+        i = ASISSTANT_RESPONSE_LENGTH
+        while i < len(text) and i < (ASISSTANT_RESPONSE_LENGTH + RESPONSE_LENGTH_MARGIN) and text[i] not in '.!?':
+            i += 1
+        cut_text = text[:i+1]
+    else:
+        cut_text = text
+    print(len(cut_text))
+    return cut_text
+
+
 async def get_bing_response(prompt, bing_bot):
     print_system_output(get_system_text('8'))
     initial_time = time.time()
@@ -375,6 +396,7 @@ async def get_bing_response(prompt, bing_bot):
         print_system_output(
             f"{get_system_text('9')}{round(final_time, 1)} {get_system_text('10')}")
         bot_response = clear_bing_text(response)
+        bot_response = cut_text(bot_response)
         await bing_bot.close()
     except Exception as e:
         print_system_output(get_system_text('11', ' get_bing_response: '), e)
@@ -419,6 +441,7 @@ def get_chatgpt_response(prompt, messages=None):
     if not response:
         return False
     bot_response = response["choices"][0]["message"]["content"]
+    bot_response = cut_text(bot_response)
 
     messages.append({"role": "assistant", "content": bot_response})
 
@@ -443,15 +466,16 @@ def get_bard_response(prompt, bard_bot):
         print_system_output(get_system_text('16', ' get_bard_response: '), e)
         print_and_play(get_system_text('16'))
         return False
-    bard_response = clear_text(response['content'])
+    bot_response = clear_text(response['content'])
+    bot_response = cut_text(bot_response)
     if assistant_language != 'en':
-        bard_response = translate_text(bard_response, es_to_en=False)
-    if not bard_response:
+        bot_response = translate_text(bot_response, es_to_en=False)
+    if not bot_response:
         return False
     final_time = time.time() - initial_time
     print_system_output(
         f"{get_system_text('17')}{round(final_time, 1)} {get_system_text('10')}")
-    return bard_response
+    return bot_response
 
 
 def contextualize_bard(bard_bot):

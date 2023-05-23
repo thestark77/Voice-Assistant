@@ -30,10 +30,9 @@ https://us-east-1.console.aws.amazon.com/iamv2/home#/users/details/VoiceA?sectio
 pipupgrade --verbose --latest --yes
 python -m venv venv
 source venv/Scripts/activate
-python -m pip install -U pip wheel setuptools
 pip list
 pip install -r requirements.txt 
 deactivate
 poetry
-
-pip install granslate
+python -m pip install --upgrade pip
+python -m pip install -U pip wheel setuptools

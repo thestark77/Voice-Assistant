@@ -8,7 +8,8 @@ AUDIO_CAPTURE_MODE = 'ppt'  # ppt / listen
 PUSH_TO_TALK_KEY = 'space'  # Key for push to talk
 INPUT_MODE = 'voice'  # voice / text
 SPEECH_SPEED = 118  # % talking speed [20% - 200%]
-ASISSTANT_RESPONSE_LENGTH = 500
+ASISSTANT_RESPONSE_LENGTH = 400
+RESPONSE_LENGTH_MARGIN = 200
 
 # ----------------------------------------------------------------
 # System settings
@@ -37,7 +38,7 @@ LANGUAGE_SETTINGS = {
 # ----------------------------------------------------------------
 BING_WAKE_WORDS = ["internet", "bing", "online", "hello", "hola", ]
 GPT_WAKE_WORDS = ["chat", "gpt"]
-BARD_WAKE_WORDS = ["asistente", "assistant", "google", "bard"]
+BARD_WAKE_WORDS = ["asistente", "assistant", "google"]
 
 EXIT_WORDS = {
     "es": ["adios", "adiós", "hasta luego", "chao", "nos vemos luego"],
@@ -117,7 +118,6 @@ WIKIPEDIA_KEYWORDS = {
 WOLFRAM_KEYWORDS = {
     "es": ["busca en wolfram",
            "resultado wolfram",
-           "busca wolfram",
            "consulta wolfram",
            "realiza wolfram",
            "según wolfram",
@@ -453,7 +453,7 @@ NOT_WAKE_WORD_PHRASES = {
            "Call, shout if you need me, but with the keyword, please"]
 }
 WELCOME_PHRASES = {
-    "es": ["¡Hola hola! Soy {}, tu asistente personal cargado de energía y emoción ¿En qué puedo ayudarte hoy?",
+    "es": ["¡Hola hola! Soy {}, tu asistente personal cargado de energía y emoción. ¿En qué puedo ayudarte hoy?",
            "¡Bienvenido de vuelta! Soy {}, tu asistente favorita, siempre lista para sorprenderte con soluciones brillantes",
            "¡Hola, hola! Soy {}, tu asistente personal cargado de energía y emoción. ¿En qué puedo ayudarte hoy?",
            "¡Hola! {} al rescate, dispuesta a solucionar todas tus inquietudes",
@@ -595,7 +595,7 @@ SYSTEM_TEXTS = {
         "17": f"Tiempo de respuesta de {BARD_ASSISTANT_NAME}: ",
         "18": "Empezando un nuevo chat...",
         "19": "Di una palabra clave: ",
-        "20": "Modelo seleccionado: ",
+        "20": "Modelo de lenguaje seleccionado: ",
         "21": f"{BING_ASSISTANT_NAME} no está disponible, intenta reiniciar la conversación para intentarlo de nuevo",
         "22": f"{BARD_ASSISTANT_NAME} no está disponible, intenta reiniciar la conversación para intentarlo de nuevo",
     },
@@ -619,7 +619,7 @@ SYSTEM_TEXTS = {
         "17": f"{BARD_ASSISTANT_NAME} response time: ",
         "18": "Starting a new chat...",
         "19": "Say a keyword: ",
-        "20": "Selected model: ",
+        "20": "Selected language model: ",
         "21": f"{BING_ASSISTANT_NAME} is not available try to restart the conversation to try again",
         "22": f"{BARD_ASSISTANT_NAME} is not available try to restart the conversation to try again",
     }
