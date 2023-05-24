@@ -8,6 +8,7 @@ import keyboard
 import openai
 import asyncio
 import boto3
+import threading
 import pydub
 import pyaudio
 from deep_translator import GoogleTranslator as Translator
@@ -18,17 +19,21 @@ import speech_recognition as sr
 from EdgeGPT import Chatbot, ConversationStyle
 from Bard import Chatbot as BardBot
 from dotenv import load_dotenv
-from settings.config import DEFAULT_ASSISTANT_LANGUAGE, AUDIO_CAPTURE_MODE, PUSH_TO_TALK_KEY, INPUT_MODE, SPEECH_SPEED, GPT_MAX_TOKENS, RECORD_INTERVAL, LANGUAGE_SETTINGS, BING_WAKE_WORDS, GPT_WAKE_WORDS, BARD_WAKE_WORDS, EXIT_WORDS, RESET_WORDS, CHANGE_LANGUAGE_WORDS, YOUTUBE_KEYWORDS, SPOTIFY_KEYWORDS, WIKIPEDIA_KEYWORDS, WOLFRAM_KEYWORDS, WEB_KEYWORDS, GPT_INITIAL_CONTEXT, BARD_INITIAL_CONTEXT, LOADING_PHRASES, ACTIVATION_PHRASES, CONTINUE_CHAT_PHRASES, FINISH_CHAT_PHRASES, DID_NOT_UNDERSTAND_PHRASES, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, FUNCTION_ASSISTANT, FUNCTION_RESET, BARD_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BING_ASSISTANT_NAME, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, TEXT_MARKUP, SYSTEM_TEXT_COLOR, SYSTEM_TEXTS, LANGUAGE_CHANGED_PHRASES, FUNCTION_CHANGE_LANGUAGE, ASISSTANT_RESPONSE_LENGTH, RESPONSE_LENGTH_MARGIN
+from settings.config import DEFAULT_ASSISTANT_LANGUAGE, DEFAULT_INPUT_MODE, PUSH_TO_TALK_KEY, GPT_MAX_TOKENS, RECORD_INTERVAL, BING_WAKE_WORDS, GPT_WAKE_WORDS, BARD_WAKE_WORDS, EXIT_WORDS, RESET_WORDS, CHANGE_LANGUAGE_WORDS, YOUTUBE_KEYWORDS, SPOTIFY_KEYWORDS, WIKIPEDIA_KEYWORDS, WOLFRAM_KEYWORDS, WEB_KEYWORDS, GPT_INITIAL_CONTEXT, BARD_INITIAL_CONTEXT, LOADING_PHRASES, ACTIVATION_PHRASES, CONTINUE_CHAT_PHRASES, FINISH_CHAT_PHRASES, DID_NOT_UNDERSTAND_PHRASES, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, FUNCTION_ASSISTANT, FUNCTION_RESET, BARD_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BING_ASSISTANT_NAME, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, TEXT_MARKUP, SYSTEM_TEXT_COLOR, SYSTEM_TEXTS, LANGUAGE_CHANGED_PHRASES, FUNCTION_CHANGE_LANGUAGE, ASISSTANT_RESPONSE_LENGTH, RESPONSE_LENGTH_MARGIN, FUNCTION_CHANGE_INPUT_MODE, CHANGE_INPUT_MODE_WORDS, DEFAULT_AUDIO_CAPTURE_MODE, INPUT_MODE_CHANGED_PHRASES, CHANGE_AUDIO_CAPTURE_MODE_WORDS, AUDIO_CAPTURE_MODE_CHANGED_PHRASES, FUNCTION_CHANGE_AUDIO_CAPTURE_MODE, SELECTED_ENGLISH_ASSISTANT, SELECTED_SPANISH_ASSISTANT, SPEECH_RATE_INCREMENT, SPEECH_PITCH_INCREMENT, PITCH_CONTOUR, VOICE_STYLE, VOICE_STYLE_DEGREE, SPANISH_ASSISTANT_NAME, ENGLISH_ASSISTANT_NAME
 
 # Carga las variables de entorno
 load_dotenv()
 
 assistant_language = DEFAULT_ASSISTANT_LANGUAGE
+input_mode = DEFAULT_INPUT_MODE
+audio_capture_mode = DEFAULT_AUDIO_CAPTURE_MODE
 
 GPT_API_KEY = os.environ['GPT_API_KEY']
 AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
 AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
 BARD_TOKEN = os.environ['BARD_TOKEN']
+AZURE_SPEECH_API_KEY = os.environ['AZURE_SPEECH_API_KEY']
+AZURE_SPEECH_REGION = os.environ['AZURE_SPEECH_REGION']
 # Initialize the OpenAI API
 openai.api_key = GPT_API_KEY
 
@@ -40,10 +45,10 @@ session = boto3.Session(
 )
 
 azure_speech_config = speechsdk.SpeechConfig(
-    subscription="6b575ac067164d4fb90291d64cd6edfb",
-    region="eastus",
-    # speech_recognition_language=system_language,
+    subscription=AZURE_SPEECH_API_KEY,
+    region=AZURE_SPEECH_REGION,
 )
+audio_config = AudioOutputConfig(use_default_speaker=True)
 
 
 def handle_keyboard_interrupt(signal, frame):
@@ -56,6 +61,14 @@ def handle_keyboard_interrupt(signal, frame):
 
 # Configurar el manejador de la señal de interrupción de teclado
 signal.signal(signal.SIGINT, handle_keyboard_interrupt)
+
+
+def get_assistant_name():
+    if assistant_language == 'en':
+        assistant_name = ENGLISH_ASSISTANT_NAME
+    else:
+        assistant_name = SPANISH_ASSISTANT_NAME
+    return assistant_name
 
 
 def get_system_text(system_text_id, aditional_string=''):
@@ -117,20 +130,76 @@ def get_random_phrase(list):
     return random_phrase
 
 
+def synthesize_to_speaker(text):
+    if assistant_language == 'en':
+        voice_id = SELECTED_ENGLISH_ASSISTANT['voice_id']
+        language = SELECTED_ENGLISH_ASSISTANT['language']
+    else:
+        voice_id = SELECTED_SPANISH_ASSISTANT['voice_id']
+        language = SELECTED_SPANISH_ASSISTANT['language']
+    try:
+        speech_synthesizer = speechsdk.SpeechSynthesizer(
+            speech_config=azure_speech_config, audio_config=audio_config)
+        ssml_text = f'''
+        <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="{language}">
+        <voice name="{voice_id}">
+        [EXPRESSION-OPEN]
+        <prosody rate="{SPEECH_RATE_INCREMENT}%" pitch="{SPEECH_PITCH_INCREMENT}%" contour="{PITCH_CONTOUR}">
+        {text}
+        </prosody>
+        [EXPRESSION-CLOSE]
+        </voice>
+        </speak>
+        '''
+        if VOICE_STYLE != '' and VOICE_STYLE.lower() != 'default' and any_word_of_list_in_phrase(SELECTED_ENGLISH_ASSISTANT['styles'], VOICE_STYLE):
+            if VOICE_STYLE_DEGREE != '' and str(VOICE_STYLE_DEGREE) != '1':
+                style_open = f"<mstts:express-as style='{VOICE_STYLE}' styledegree='{VOICE_STYLE_DEGREE}'>"
+            else:
+                style_open = f"<mstts:express-as style='{VOICE_STYLE}'>"
+            style_close = "</mstts:express-as>"
+            ssml_text = ssml_text.replace("[EXPRESSION-OPEN]", style_open)
+            ssml_text = ssml_text.replace("[EXPRESSION-CLOSE]", style_close)
+        else:
+            ssml_text = ssml_text.replace("[EXPRESSION-OPEN]", '')
+            ssml_text = ssml_text.replace("[EXPRESSION-CLOSE]", '')
+
+        speech_synthesis_result = speech_synthesizer.speak_ssml_async(
+            ssml_text).get()
+
+        if speech_synthesis_result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
+            # print("Speech synthesized for text [Jorge]".format(text))
+            pass
+        elif speech_synthesis_result.reason == speechsdk.ResultReason.Canceled:
+            cancellation_details = speech_synthesis_result.cancellation_details
+            print_system_output(get_system_text(
+                '26', ' synthesize_to_speaker: '), cancellation_details.reason)
+            if cancellation_details.reason == speechsdk.CancellationReason.Error:
+                if cancellation_details.error_details:
+                    print_system_output(get_system_text(
+                        '27'), cancellation_details.error_details)
+                    print_system_output(get_system_text('28'))
+    except Exception as e:
+        print_system_output(get_system_text(
+            '3', ' synthesize_to_speaker: '), e)
+
+
 def synthesize_speech(text, output_filename):
-    ssml_text = f"<speak><prosody rate='{SPEECH_SPEED}%'>{text}</prosody></speak>"
+    ssml_text = f"<speak><prosody rate='{SPEECH_RATE_INCREMENT}%'>{text}</prosody></speak>"
+    if assistant_language == "en":
+        voice_id = "Ruth"
+    else:
+        voice_id = "Lupe"
     try:
         polly = session.client('polly', region_name='us-east-1')
         response = polly.synthesize_speech(
             TextType='ssml',
             Text=ssml_text,
             OutputFormat='mp3',
-            VoiceId=LANGUAGE_SETTINGS[assistant_language]["voice_id"],
+            VoiceId=voice_id,
             Engine='neural'
         )
     except Exception as e:
         print_system_output(get_system_text('3', ' synthesize_speech: '), e)
-        print_and_play(get_system_text('3'))
     with open(output_filename, 'wb') as f:
         f.write(response['AudioStream'].read())
 
@@ -156,16 +225,23 @@ def create_audio_folder():
 def print_and_play(message):
     if message is not None and message.strip() != '':
         print(f"{ASSISTANT_TEXT_COLOR}{get_system_text('4')}{message}{TEXT_MARKUP}")
-        synthesize_speech(message, 'audio/response.mp3')
-        play_audio('audio/response.mp3')
+        if (assistant_language == 'es' and SELECTED_SPANISH_ASSISTANT['voice_id'] == 'Lupe') or (assistant_language == 'en' and SELECTED_ENGLISH_ASSISTANT['voice_id'] == 'Ruth'):
+            synthesize_speech(message, 'audio/response.mp3')
+            play_audio('audio/response.mp3')
+        else:
+            synthesize_to_speaker(message)
 
 
 def get_text_from_audio(audio, recognizer, awake=True):
     phrase = ''
     returning_phrase = ''
+    if assistant_language == 'en':
+        recognition_language = 'en-US'
+    else:
+        recognition_language = 'es-CO'
     try:
         textFromAudio = recognizer.recognize_google(
-            audio, language=LANGUAGE_SETTINGS[assistant_language]["language"])
+            audio, language=recognition_language)
         phrase = textFromAudio.lower()
         if phrase is not None and phrase.strip() != '':
             if awake:
@@ -246,6 +322,8 @@ def listen_audio_to_text(awake=True):
 
 def system_functions_from_phrase(phrase):
     global assistant_language
+    global input_mode
+    global audio_capture_mode
     system_function = ''
     if any_word_of_list_in_phrase(EXIT_WORDS[assistant_language], phrase):
         goodbye_phrase = get_random_phrase(
@@ -254,20 +332,53 @@ def system_functions_from_phrase(phrase):
         sys.exit(0)
     elif any_word_of_list_in_phrase(RESET_WORDS[assistant_language], phrase):
         system_function = FUNCTION_RESET
-    else:
-        if assistant_language == 'en' and any_word_of_list_in_phrase(CHANGE_LANGUAGE_WORDS[assistant_language], phrase):
+
+    elif any_word_of_list_in_phrase(CHANGE_INPUT_MODE_WORDS[assistant_language], phrase):
+        system_function = FUNCTION_CHANGE_INPUT_MODE
+        if input_mode == 'voice':
+            change_input_mode_phrase = get_random_phrase(
+                INPUT_MODE_CHANGED_PHRASES[assistant_language])
+            input_mode = "text"
+            # system_function = FUNCTION_RESET # Not necessary but recommended
+        else:
+            change_input_mode_phrase = get_random_phrase(
+                INPUT_MODE_CHANGED_PHRASES[assistant_language])
+            input_mode = "voice"
+            # system_function = FUNCTION_RESET # Not necessary but recommended
+        print_and_play(change_input_mode_phrase)
+        print_system_output(f"{get_system_text('23')}{input_mode}")
+
+    elif any_word_of_list_in_phrase(CHANGE_AUDIO_CAPTURE_MODE_WORDS[assistant_language], phrase):
+        system_function = FUNCTION_CHANGE_AUDIO_CAPTURE_MODE
+        if audio_capture_mode == 'listen':
+            change_audio_capture_mode = get_random_phrase(
+                AUDIO_CAPTURE_MODE_CHANGED_PHRASES[assistant_language])
+            (change_audio_capture_mode)
+            audio_capture_mode = "ppt"
+            # system_function = FUNCTION_RESET # Not necessary but recommended
+        else:
+            change_audio_capture_mode = get_random_phrase(
+                AUDIO_CAPTURE_MODE_CHANGED_PHRASES[assistant_language])
+            audio_capture_mode = "listen"
+            # system_function = FUNCTION_RESET # Not necessary but recommended
+        print_and_play(change_audio_capture_mode)
+        print_system_output(f"{get_system_text('25')}{audio_capture_mode}")
+
+    elif any_word_of_list_in_phrase(CHANGE_LANGUAGE_WORDS[assistant_language], phrase):
+        system_function = FUNCTION_CHANGE_LANGUAGE
+        if assistant_language == 'en':
             change_language_phrase = get_random_phrase(
                 LANGUAGE_CHANGED_PHRASES[assistant_language])
             print_and_play(change_language_phrase)
             assistant_language = "es"
-            system_function = FUNCTION_CHANGE_LANGUAGE
+            print_system_output(get_system_text('24'))
             # system_function = FUNCTION_RESET # Not necessary but recommended
-        elif assistant_language == 'es' and any_word_of_list_in_phrase(CHANGE_LANGUAGE_WORDS[assistant_language], phrase):
+        else:
             change_language_phrase = get_random_phrase(
                 LANGUAGE_CHANGED_PHRASES[assistant_language])
             print_and_play(change_language_phrase)
             assistant_language = "en"
-            system_function = FUNCTION_CHANGE_LANGUAGE
+            print_system_output(get_system_text('24'))
             # system_function = FUNCTION_RESET # Not necessary but recommended
 
     return system_function
@@ -375,15 +486,13 @@ def clear_bing_text(response):
 
 
 def cut_text(text):
-    print(len(text))
-    if len(text) > ASISSTANT_RESPONSE_LENGTH:
-        i = ASISSTANT_RESPONSE_LENGTH
-        while i < len(text) and i < (ASISSTANT_RESPONSE_LENGTH + RESPONSE_LENGTH_MARGIN) and text[i] not in '.!?':
+    if len(text) > int(ASISSTANT_RESPONSE_LENGTH):
+        i = int(ASISSTANT_RESPONSE_LENGTH)
+        while i < len(text) and i < (int(ASISSTANT_RESPONSE_LENGTH) + int(RESPONSE_LENGTH_MARGIN)) and text[i] not in ('.', '!', '?', '\n'):
             i += 1
         cut_text = text[:i+1]
     else:
         cut_text = text
-    print(len(cut_text))
     return cut_text
 
 
@@ -397,7 +506,7 @@ async def get_bing_response(prompt, bing_bot):
             f"{get_system_text('9')}{round(final_time, 1)} {get_system_text('10')}")
         bot_response = clear_bing_text(response)
         bot_response = cut_text(bot_response)
-        await bing_bot.close()
+        # await bing_bot.close()
     except Exception as e:
         print_system_output(get_system_text('11', ' get_bing_response: '), e)
         print_and_play(get_system_text('11'))
@@ -405,10 +514,10 @@ async def get_bing_response(prompt, bing_bot):
     return bot_response
 
 
-def get_chatgpt_response(prompt, messages=None):
+def get_chatgpt_response(prompt, assistant_name, messages=None):
     if messages is None:
         initial_context = GPT_INITIAL_CONTEXT[assistant_language].replace(
-            "[ASSISTANT_NAME]", LANGUAGE_SETTINGS[assistant_language]["assistant_name"])
+            "[ASSISTANT_NAME]", assistant_name)
         context = {"role": "system",
                    "content": initial_context}
         messages = [context]
@@ -478,9 +587,9 @@ def get_bard_response(prompt, bard_bot):
     return bot_response
 
 
-def contextualize_bard(bard_bot):
+def contextualize_bard(bard_bot, assistant_name):
     initial_context = BARD_INITIAL_CONTEXT.replace(
-        "[ASSISTANT_NAME]", LANGUAGE_SETTINGS[assistant_language]["assistant_name"])
+        "[ASSISTANT_NAME]", assistant_name)
     try:
         bard_bot.ask(initial_context)
     except Exception as e:
@@ -488,11 +597,11 @@ def contextualize_bard(bard_bot):
 
 
 def get_user_input(awake):
-    if INPUT_MODE == 'text':
+    if input_mode == 'text':
         user_input = str(
             input(f"{USER_TEXT_COLOR}{get_system_text('5')}{TEXT_MARKUP}"))
     else:
-        if AUDIO_CAPTURE_MODE == 'listen':
+        if audio_capture_mode == 'listen':
             user_input = listen_audio_to_text(awake)
         else:
             user_input = ptt_audio_to_text(awake)
@@ -500,7 +609,7 @@ def get_user_input(awake):
     return user_input
 
 
-def get_wake_word():
+def get_wake_word(assistant_name):
     while True:
         text_from_audio = get_user_input(False)
 
@@ -512,7 +621,7 @@ def get_wake_word():
             welcome_phrase = get_random_phrase(
                 WELCOME_PHRASES[assistant_language])
             parsed_welcome_phrase = welcome_phrase.replace(
-                "{}", LANGUAGE_SETTINGS[assistant_language]["assistant_name"])
+                "{}", assistant_name)
             print_and_play(parsed_welcome_phrase)
         elif wake_word != '':
             print_system_output(
@@ -529,9 +638,8 @@ async def start_binggpt():
     try:
         bing_bot = await Chatbot.create()
     except Exception as e:
-        bing_bot = await Chatbot.create(cookie_path='settings/cookies.json')
-        if not bing_bot:
-            return False
+        print(e)
+        return False
 
     return bing_bot
 
@@ -539,7 +647,6 @@ async def start_binggpt():
 def start_bard():
     try:
         bard_bot = BardBot(BARD_TOKEN)
-        contextualize_bard(bard_bot)
     except Exception as e:
         return False
 
@@ -548,28 +655,34 @@ def start_bard():
 
 async def main():
     create_audio_folder()
+    bing_bot = await start_binggpt()
 
     while True:
         loading_phrase = get_random_phrase(LOADING_PHRASES[assistant_language])
         print_system_output(loading_phrase)
+        assistant_name = get_assistant_name()
 
         # Bots initialization
         bard_bot = start_bard()
+        bard_thread = threading.Thread(
+            target=contextualize_bard, daemon=True, args=(bard_bot, assistant_name))
+        bard_thread.start()
+        # bard_bot = start_bard()
+        # bing_bot = await start_binggpt()
         if not bard_bot:
             print_system_output(get_system_text('22'))
-        bing_bot = await start_binggpt()
         if not bing_bot:
             print_system_output(get_system_text('21'))
 
         welcome_phrase = get_random_phrase(WELCOME_PHRASES[assistant_language])
         parsed_welcome_phrase = welcome_phrase.replace(
-            "{}", LANGUAGE_SETTINGS[assistant_language]["assistant_name"])
+            "{}", assistant_name)
         print_and_play(parsed_welcome_phrase)
 
         print_system_output(
             f"{get_system_text('19')}({BARD_ASSISTANT_NAME}: {BARD_WAKE_WORDS[0]}, {GPT_ASSISTANT_NAME}: {GPT_WAKE_WORDS[0]}, {BING_ASSISTANT_NAME}: {BING_WAKE_WORDS[0]})...")
 
-        wake_word = get_wake_word()
+        wake_word = get_wake_word(assistant_name)
         if wake_word == FUNCTION_RESET:
             print_and_play(get_system_text('18'))
             continue
@@ -601,12 +714,14 @@ async def main():
                         print_and_play(get_system_text('21'))
                         continue
                 elif wake_word == GPT_ASSISTANT_NAME:
-                    response = get_chatgpt_response(prompt, messages)
+                    response = get_chatgpt_response(
+                        prompt, assistant_name, messages)
                     if response:
                         bot_response = response["bot_response"]
                         messages = response["messages"]
                 elif wake_word == BARD_ASSISTANT_NAME:
                     if bard_bot:
+                        bard_thread.join()
                         bot_response = get_bard_response(prompt, bard_bot)
                     else:
                         print_and_play(get_system_text('22'))
@@ -620,6 +735,8 @@ async def main():
                     continue_phrase = get_random_phrase(
                         CONTINUE_CHAT_PHRASES[assistant_language])
                     print_and_play(continue_phrase)
+        if bing_bot:
+            await bing_bot.reset()
 
 if __name__ == "__main__":  # TODO: Rebuild project in multiple files
     asyncio.run(main())

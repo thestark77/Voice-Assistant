@@ -9,6 +9,14 @@ GPT_API_KEY="PASTE_IT HERE"
 AWS_ACCESS_KEY_ID="PASTE_IT HERE"
 AWS_SECRET_ACCESS_KEY="PASTE_IT HERE"
 
+# Errores conocidos
+1. Si inicias el asistente o terminas una charla y te demoras varios minutos en volver a hablarle y consultar con uno de los bots, es posible que dé un error de conexión.
+Solución temporal: intentar hablarle de nuevo o reiniciar la conversación, bien sea por teclado o por input
+2. Cuando cambias en modo de entrada de voz a texto, la consola se llena de espacios o caracteres, por lo que antes de enviarle el primer mensaje por input de texto.
+Solución temporal: Borrar el chat, reiniciar el chat o detener el programa, cambiar el parámetro DEFAULT_INPUT_MODE a 'text', guardar los cambios e iniciar nuevemente el programa.
+3. A veces al iniciar el programa ouede ser que Bing GPT no esté disponible, este bot tiene una conexión muy mala.
+Solución temporal: reiniciar el chat, detener el programa y volverlo a iniciar o ignorar el error y evitar usar Bing GPT como asistente
+
 # Commands
 pip install -r requirements.txt
 

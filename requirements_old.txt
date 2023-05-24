@@ -1,16 +1,15 @@
-boto3==1.26.137
-EdgeGPT==0.4.4
-EdgeGPT==0.4.4
+boto3==1.26.135
+deep_translator==1.11.0
+EdgeGPT==0.6.2
 GoogleBard==1.0.3
-deep-translator==1.11.0
 keyboard==0.13.5
 openai==0.27.6
 PyAudio==0.2.13
 pydub==0.25.1
 python-dotenv==1.0.0
 SpeechRecognition==3.10.0
-httpcore==0.9.1
-chardet==3.0.4
-h2==3.2.0
-h11==0.9.0
 urllib3==1.26.15
+# httpcore==0.9.1
+# chardet==3.0.4
+# h2==3.2.0
+# h11==0.9.0

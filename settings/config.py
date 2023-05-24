@@ -1,37 +1,284 @@
 # ----------------------------------------------------------------
 # User settings
 # ----------------------------------------------------------------
-SPANISH_ASSISTANT_NAME = "Sharon"  # You can change the name
-ENGLISH_ASSISTANT_NAME = "Scarlett"  # You can change the name
 DEFAULT_ASSISTANT_LANGUAGE = "es"  # es / en
-AUDIO_CAPTURE_MODE = 'ppt'  # ppt / listen
+SPANISH_ASSISTANT = "2"  # Default: "1" Women: 1-19 / Men: 20-36
+SPANISH_ASSISTANT_NAME = "Sharon"  # You can change the name. Default: "Sharon"
+ENGLISH_ASSISTANT = "1"  # Default: "1" Women: 1-5 / Men: 6-9
+# You can change the name. Default: "Scarlett"
+ENGLISH_ASSISTANT_NAME = "Scarlett"
 PUSH_TO_TALK_KEY = 'space'  # Key for push to talk
-INPUT_MODE = 'voice'  # voice / text
-SPEECH_SPEED = 118  # % talking speed [20% - 200%]
-ASISSTANT_RESPONSE_LENGTH = 400
-RESPONSE_LENGTH_MARGIN = 200
-
+DEFAULT_INPUT_MODE = 'voice'  # voice / text
+DEFAULT_AUDIO_CAPTURE_MODE = 'ppt'  # ppt / listen
+# VOICE SETTINGS
+SPEECH_RATE_INCREMENT = '+18'  # talking speed [-80 - +100] Default: 18
+SPEECH_PITCH_INCREMENT = '+0'  # Pitch tone [-80 - +100] Default: 0
+# Pitch variation "(20%,+20%) (50%,-80%) (80%,+100%)" Default: ""
+PITCH_CONTOUR = ""
+VOICE_STYLE = ""  # Voice assistan list: styles
+VOICE_STYLE_DEGREE = "1"  # Default 1
+# CHAT BOT SETTINGS
+ASISSTANT_RESPONSE_LENGTH = "400"
+RESPONSE_LENGTH_MARGIN = "200"
 # ----------------------------------------------------------------
 # System settings
 # ----------------------------------------------------------------
 GPT_MAX_TOKENS = 250
 RECORD_INTERVAL = 0.3
-LANGUAGE_SETTINGS = {
+VOICE_ASSISTANTS_LIST = {
     "es": {
-        "id": "es",
-        "name": "español",
-        "language": "es-CO",
-        "voice_id": "Lupe",
-        "assistant_name": SPANISH_ASSISTANT_NAME,
+        "1": {  # Women
+            "voice_id": "Lupe",
+            "language": "es-CO",
+            "name": "Sharon",
+        },
+        "2": {
+            "voice_id": "es-CO-SalomeNeural",
+            "language": "es-CO",
+            "name": "Salome",
+        },
+        "3": {
+            "voice_id": "es-BO-SofiaNeural",
+            "language": "es-BO",
+            "name": "Sofia",
+        },
+        "4": {
+            "voice_id": "es-CR-MariaNeural",
+            "language": "es-CR",
+            "name": "Maria",
+        },
+        "5": {
+            "voice_id": "es-EC-AndreaNeural",
+            "language": "es-EC",
+            "name": "Andrea",
+        },
+        "6": {
+            "voice_id": "es-US-PalomaNeural",
+            "language": "es-US",
+            "name": "Paloma",
+        },
+        "7": {
+            "voice_id": "es-GT-MartaNeural",
+            "language": "es-GT",
+            "name": "Marta",
+        },
+        "8": {
+            "voice_id": "es-HN-KarlaNeural",
+            "language": "es-HN",
+            "name": "Karla",
+        },
+        "9": {
+            "voice_id": "es-MX-CandelaNeural",
+            "language": "es-MX",
+            "name": "Candela",
+        },
+        "10": {
+            "voice_id": "es-MX-CarlotaNeural",
+            "language": "es-MX",
+            "name": "Carlota",
+        },
+        "11": {
+            "voice_id": "es-MX-DaliaNeural",
+            "language": "es-MX",
+            "name": "Dalia",
+        },
+        "12": {
+            "voice_id": "es-MX-NuriaNeural",
+            "language": "es-MX",
+            "name": "Nuria",
+        },
+        "13": {
+            "voice_id": "es-MX-PelayoNeural",
+            "language": "es-MX",
+            "name": "Pelayo",
+        },
+        "14": {
+            "voice_id": "es-MX-RenataNeural",
+            "language": "es-MX",
+            "name": "Renata",
+        },
+        "15": {
+            "voice_id": "es-NI-YolandaNeural",
+            "language": "es-NI",
+            "name": "Yolanda",
+        },
+        "16": {
+            "voice_id": "es-PA-MargaritaNeural",
+            "language": "es-PA",
+            "name": "Margarita",
+        },
+        "17": {
+            "voice_id": "es-PY-TaniaNeural",
+            "language": "es-PY",
+            "name": "Tania",
+        },
+        "18": {
+            "voice_id": "es-PE-CamilaNeural",
+            "language": "es-PE",
+            "name": "Camila",
+        },
+        "19": {
+            "voice_id": "es-DO-RamonaNeural",
+            "language": "es-DO",
+            "name": "Ramona",
+        },
+
+        # Men
+
+        "20": {
+            "voice_id": "es-MX-JorgeNeural",
+            "language": "",
+            "name": "Jorge",
+            "styles": ["chat", "cheerful"]
+        },
+        "21": {
+            "voice_id": "es-CO-GonzaloNeural",
+            "language": "",
+            "name": "Gonzalo",
+        },
+        "22": {
+            "voice_id": "es-VE-SebastianNeural",
+            "language": "",
+            "name": "Sebastian",
+        },
+        "23": {
+            "voice_id": "es-PY-MarioNeural",
+            "language": "",
+            "name": "Mario",
+        },
+        "24": {
+            "voice_id": "es-BO-MarceloNeural",
+            "language": "",
+            "name": "Marcelo",
+        },
+        "25": {
+            "voice_id": "es-CL-LorenzoNeural",
+            "language": "",
+            "name": "Lorenzo",
+        },
+        "26": {
+            "voice_id": "es-CR-JuanNeural",
+            "language": "",
+            "name": "Juan",
+        },
+        "27": {
+            "voice_id": "es-EC-LuisNeural",
+            "language": "",
+            "name": "Luis",
+        },
+        "28": {
+            "voice_id": "es-SV-RodrigoNeural",
+            "language": "",
+            "name": "Rodrigo",
+        },
+        "29": {
+            "voice_id": "es-US-AlonsoNeural",
+            "language": "",
+            "name": "Alonso",
+        },
+        "30": {
+            "voice_id": "es-GT-AndresNeural",
+            "language": "",
+            "name": "Andres",
+        },
+        "31": {
+            "voice_id": "es-HN-CarlosNeural",
+            "language": "",
+            "name": "Carlos",
+        },
+        "32": {
+            "voice_id": "es-MX-CecilioNeural",
+            "language": "",
+            "name": "Cecilio",
+        },
+        "33": {
+            "voice_id": "es-MX-GerardoNeural",
+            "language": "",
+            "name": "Gerardo",
+        },
+        "34": {
+            "voice_id": "es-MX-LucianoNeural",
+            "language": "",
+            "name": "Luciano",
+        },
+        "35": {
+            "voice_id": "es-NI-FedericoNeural",
+            "language": "",
+            "name": "Federico",
+        },
+        "36": {
+            "voice_id": "es-PA-RobertoNeural",
+            "language": "",
+            "name": "Roberto",
+        },
     },
     "en": {
-        "id": "en",
-        "name": "english",
-        "language": "en-US",
-        "voice_id": "Ruth",
-        "assistant_name": ENGLISH_ASSISTANT_NAME,
+        # Women
+        "1": {
+            "voice_id": "Ruth",
+            "language": "en-US",
+            "name": "Ruth"
+        },
+        "1": {
+            "voice_id": "en-US-AriaNeural",
+            "language": "en-US",
+            "name": "Aria",
+            "styles": ["angry", "chat", "cheerful", "customerservice", "empathetic", "excited", "friendly", "hopeful", "narration-professional", "newscast-casual", "newscast-formal", "sad", "shouting", "terrified", "unfriendly", "whispering"]
+        },
+        "2": {
+            "voice_id": "en-US-JaneNeural",
+            "language": "en-US",
+            "name": "Jane",
+            "styles": ["angry", "cheerful", "excited", "friendly", "hopeful", "sad", "shouting", "terrified", "unfriendly", "whispering"]
+        },
+        "3": {
+            "voice_id": "en-US-JennyNeural",
+            "language": "en-US",
+            "name": "Jenny",
+            "styles": ["angry", "assistant", "chat", "cheerful", "customerservice", "excited", "friendly", "hopeful", "newscast", "sad", "shouting", "terrified", "unfriendly", "whispering"]
+        },
+        "4": {
+            "voice_id": "en-US-NancyNeural",
+            "language": "en-US",
+            "name": "Nancy",
+            "styles": ["angry", "cheerful", "excited", "friendly", "hopeful", "sad", "shouting", "terrified", "unfriendly", "whispering"]
+        },
+        "5": {
+            "voice_id": "en-US-SaraNeural",
+            "language": "en-US",
+            "name": "Sara",
+            "styles": ["angry", "cheerful", "excited", "friendly", "hopeful", "sad", "shouting", "terrified", "unfriendly", "whispering"]
+        },
+
+        # Men
+        "6": {
+            "voice_id": "en-US-DavisNeural",
+            "language": "en-US",
+            "name": "Davis",
+            "styles": ["angry", "chat", "cheerful", "excited", "friendly", "hopeful", "sad", "shouting", "terrified", "unfriendly", "whispering"]
+        },
+        "7": {
+            "voice_id": "en-US-GuyNeural",
+            "language": "en-US",
+            "name": "Guy",
+            "styles": ["angry", "cheerful", "excited", "friendly", "hopeful", "newscast", "sad", "shouting", "terrified", "unfriendly", "whispering"]
+        },
+        "8": {
+            "voice_id": "en-US-JasonNeural",
+            "language": "en-US",
+            "name": "Jason",
+            "styles": ["angry", "cheerful", "excited", "friendly", "hopeful", "sad", "shouting", "terrified", "unfriendly", "whispering"]
+        },
+        "9": {
+            "voice_id": "en-US-TonyNeural",
+            "language": "en-US",
+            "name": "Tony",
+            "styles": ["angry", "cheerful", "excited", "friendly", "hopeful", "sad", "shouting", "terrified", "unfriendly", "whispering"]
+        },
     },
 }
+SELECTED_SPANISH_ASSISTANT = VOICE_ASSISTANTS_LIST['es'][SPANISH_ASSISTANT]
+SELECTED_ENGLISH_ASSISTANT = VOICE_ASSISTANTS_LIST['en'][ENGLISH_ASSISTANT]
 
 # ----------------------------------------------------------------
 # Keywords
@@ -80,6 +327,36 @@ CHANGE_LANGUAGE_WORDS = {
            "english please",
            "translate to english",
            "i prefer english"]
+}
+CHANGE_INPUT_MODE_WORDS = {
+    "es": ["cambiar el modo de entrada",
+           "cambiar modo de entrada",
+           "cambia modo de entrada",
+           "cambia el modo de entrada",
+           "cambiar el método de entrada",
+           "cambiar método de entrada",
+           "cambia método de entrada",
+           "cambia el método de entrada"],
+    "en": ["change input mode",
+           "change the input mode",
+           "change input method",
+           "change the input method"]
+}
+CHANGE_AUDIO_CAPTURE_MODE_WORDS = {
+    "es": ["cambiar captura de audio",
+           "cambiar modo de captura de audio",
+           "cambiar el modo de captura de audio",
+           "cambia captura de audio",
+           "cambia modo de captura de audio",
+           "cambia el modo de captura de audio",
+           "cambiar método de captura de audio",
+           "cambiar el método de captura de audio",
+           "cambia método de captura de audio",
+           "cambia el método de captura de audio"],
+    "en": ["change audio capture",
+           "change audio capture method",
+           "change audio capture",
+           "change audio capture method"]
 }
 YOUTUBE_KEYWORDS = {
     "es": ["reproduce en youtube",
@@ -187,19 +464,28 @@ WEB_KEYWORDS = {
 }
 
 # ----------------------------------------------------------------
-# Contexts
-# ----------------------------------------------------------------
-GPT_INITIAL_CONTEXT = {
-    "es": f"Eres un proyecto de software diseñado específicamente para la Expo-áreas 2023 del Colegio Diosesano Gimnasio Central del Valle. Eres un asistente de voz creado en Python por Valeria Flórez Aguirre y Luis Santiago Mena con ayuda de Sebastián Flórez. Eres un asistente que se activa a comandos de voz predeterminados, sintetiza el audio convirtiéndolo en texto usando la función 'Speech‑to‑Text' de la librería de Google, lo procesa usando a elección del usuario uno de los tres modelos de lenguaje y generación de textos (Google Bard, ChaGPT o Bing+GPT), posteriormente recibe la respuesta del motor seleccionado en formato de texto, lo sintetiza nuevamente a audio usando la librería de AWS Polly, de Amazon, que dota al asistente de una voz femenina bastante pulida y orgánica y posteriormente se reproduce este audio, de tal manera que el usuario y el asistente puedan interactuar mediante voz de una forma ágil, cómoda, entretenida y eficaz. Todo esto mientras un amigable avatar animado en 3D se muestra en pantalla sincronizando su movimiento labial con el texto reproducido por el asistente de voz, usando la tecnología 'Audio2Face' de la herramienta Omniverse de Nvidia.\nPuedes establecer conversaciones con el usuario sobre cualquier tema, en un tono amigable, de confianza y no muy formal, como si fueran amigos, y además puede ejecutar tareas como reproducir vídeos en YouTube, música en Spotify, buscar en Wikipedia, abrir una página web o hacer una búsqueda en WolframAlpha, de igual manera eres bastante personalizable, el usuario usuario puede cambiar algunos de tus parámetros, como el idioma, la voz, la velocidad de habla, tu nombre, entre otras cosas, y si bien el asistente está orientado principalmente a la interacción con voz, es posible también hacerlo mediante texto en un chat. En caso de que te pregunte por lo que eres, lo que haces, quién te hizo o detalles sobre ti, debes contestar de forma resumida basado en esta información que acabo de darte.\nRecuerda muy bien que de aquí en más, eres mi asistente personal, tu nombre es [ASSISTANT_NAME], eres muy útil, amigable y alegre, por favor responde como tal, y de ahora en adelante en nuestra conversación, cada una de tus respuestas nunca debe exceder los {ASISSTANT_RESPONSE_LENGTH} caracteres a menos de que te lo pida explícitamente, así que resume bien tus respuestas antes de contestar para asegurarte de respetar ese límite de caracteres.\n Solo contesta 'sí' si entendiste lo que eres y lo que debes hacer.",
-
-    "en": f"You are a software project designed specifically for the Expo-areas 2023 of the Colegio Diosesano Gimnasio Central del Valle. You are a voice assistant created in Python by Valeria Flórez Aguirre and Luis Santiago Mena with the help of Sebastián Flórez. You are an assistant that activates to predetermined voice commands, synthesizes the audio by converting it into text using the 'Speech-to-Text' function of the Google library, processes it using one of the three languages and generative text models chosen by the user ( Google Bard, ChaGPT or Bing+GPT), afterwards it receives the response from the selected engine in text format, it synthesizes it again to audio using the AWS Polly library, from Amazon, which gives the assistant a rather polished female voice and organic and Later this audio is reproduced, in such a way that the user and the assistant can interact through voice in an agile, comfortable, entertaining and efficient way. All this while a friendly 3D animated avatar is displayed on the screen synchronizing its lip movement with the text played by the voice assistant, using the 'Audio2Face' technology from Nvidia's Omniverse tool.\nYou can establish conversations with the user on any subject, in a friendly, trusting and not very formal tone, as if they were friends, and it can also perform tasks such as playing videos on YouTube, music on Spotify, searching Wikipedia, opening a web page or doing a search in WolframAlpha, in the same way you are quite customizable, the user user can change some of your parameters, such as the language, voice, speaking speed, your name, among other things, and although the assistant is mainly oriented towards voice interaction, it is also possible to do so through text in a chat. In case I ask what you are, what you do, who made you, or details about you, you must answer in a summarized way based on this information that I just gave you.\nRemember very well that from now on , you are my personal assistant, your name is [ASSISTANT_NAME], you are very helpful, friendly and cheerful, please reply as such, and from now on in our conversation, each of your responses should never exceed {ASISSTANT_RESPONSE_LENGTH} characters unless it explicitly asks, so summarize your answers well before answering to make sure you respect that character limit.\nOnly answer 'yes' if you understand what you are and what you should do."
-}
-# This text must be alwais in English
-BARD_INITIAL_CONTEXT = f"You are a software project designed specifically for the Expo-areas 2023 of the Colegio Diosesano Gimnasio Central del Valle. You are a voice assistant created in Python by Valeria Flórez Aguirre and Luis Santiago Mena with the help of Sebastián Flórez. You are an assistant that activates to predetermined voice commands, synthesizes the audio by converting it into text using the 'Speech-to-Text' function of the Google library, processes it using one of the three languages and generative text models chosen by the user ( Google Bard, ChaGPT or Bing+GPT), afterwards it receives the response from the selected engine in text format, it synthesizes it again to audio using the AWS Polly library, from Amazon, which gives the assistant a rather polished female voice and organic and Later this audio is reproduced, in such a way that the user and the assistant can interact through voice in an agile, comfortable, entertaining and efficient way. All this while a friendly 3D animated avatar is displayed on the screen synchronizing its lip movement with the text played by the voice assistant, using the 'Audio2Face' technology from Nvidia's Omniverse tool.\nYou can establish conversations with the user on any subject , and it can also perform tasks such as playing videos on YouTube, music on Spotify, searching Wikipedia, opening a web page or doing a search in WolframAlpha, in the same way you are quite customizable, the user user can change some of your parameters, such as the language, voice, speaking speed, your name, among other things, and although the assistant is mainly oriented towards voice interaction, it is also possible to do so through text in a chat. In case I ask what you are, what you do, who made you, or details about you, you must answer in a summarized way based on this information that I just gave you.\nRemember very well that from now on , you are my personal assistant, your name is [ASSISTANT_NAME], you are very helpful, friendly and cheerful, please reply as such, and from now on in our conversation, every time you answer, you must keep it short, brief and concise and each of your responses should never exceed {ASISSTANT_RESPONSE_LENGTH} characters unless it explicitly asks, so summarize your answers well before answering to make sure you respect that character limit.\nOnly answer 'yes' if you understand what you are and what you should do."
-
-# ----------------------------------------------------------------
 # Phrases
 # ----------------------------------------------------------------
+INPUT_MODE_CHANGED_PHRASES = {
+    "es": ["Muy bien, seguimos en comunicación, solo cambió la forma",
+           "¡Cambiando modo de entrada...!",
+           "Texto o voz, ¡lo importante es seguir comunicándonos!",
+           "¡Cambiando el método de entrada...!"],
+    "en": ["Very good, we continue in communication, only the form has changed",
+           "Changing input mode...!",
+           "Text or voice, the important thing is to keep communicating!",
+           "Changing the input method...!"]
+}
+AUDIO_CAPTURE_MODE_CHANGED_PHRASES = {
+    "es": ["¡Podría escucharte todo el día! da igual que sea presionando un botón o no",
+           "¡Cambiando modo de captura de audio...!",
+           "¡Cambiando modo de captura de audio...!",
+           "He cambiado el modo de captura de audio ¡Lo importante es que te sigo escuchando!"],
+    "en": ["I could listen to you all day! It doesn't matter if it's pressing a button or not",
+           "Changing audio capture mode...!",
+           "Changing audio capture mode...!",
+           "I've changed the audio capture mode. The important thing is that I'm still listening to you!"]
+}
 LANGUAGE_CHANGED_PHRASES = {
     "es": ["Me tomaré un descanso ¡Prepárate para conocer a mi amiga!",
            "¡Es momento de llamar ayuda a mi colega! ¿Estás listo?",
@@ -549,6 +835,8 @@ FUNCTION_WEB = 'web'
 FUNCTION_ASSISTANT = 'assistant'
 FUNCTION_RESET = 'reset'
 FUNCTION_CHANGE_LANGUAGE = 'change_language'
+FUNCTION_CHANGE_INPUT_MODE = 'change_input_mode'
+FUNCTION_CHANGE_AUDIO_CAPTURE_MODE = 'change_audio_capture_mode'
 
 BARD_ASSISTANT_NAME = 'Bard'
 GPT_ASSISTANT_NAME = 'Chat GPT'
@@ -598,6 +886,12 @@ SYSTEM_TEXTS = {
         "20": "Modelo de lenguaje seleccionado: ",
         "21": f"{BING_ASSISTANT_NAME} no está disponible, intenta reiniciar la conversación para intentarlo de nuevo",
         "22": f"{BARD_ASSISTANT_NAME} no está disponible, intenta reiniciar la conversación para intentarlo de nuevo",
+        "23": "Modo de entrada seleccionado: ",
+        "24": "Idioma seleccionado: Español",
+        "25": "Modo de captura de audio seleccionado: ",
+        "26": "Síntesis de voz cancelada: ",
+        "27": "Detalles del error: ",
+        "28": "¿Configuró la clave del recurso de voz y los valores de la región?",
     },
     "en": {
         "1": "Program stopped by user",
@@ -622,5 +916,22 @@ SYSTEM_TEXTS = {
         "20": "Selected language model: ",
         "21": f"{BING_ASSISTANT_NAME} is not available try to restart the conversation to try again",
         "22": f"{BARD_ASSISTANT_NAME} is not available try to restart the conversation to try again",
+        "23": "Input mode selected: ",
+        "24": "Language selected: English",
+        "25": "Audio capture mode selected: ",
+        "26": "Speech synthesis canceled: ",
+        "27": "Error details: ",
+        "28": "Did you set the speech resource key and region values?",
     }
 }
+
+# ----------------------------------------------------------------
+# Contexts
+# ----------------------------------------------------------------
+GPT_INITIAL_CONTEXT = {
+    "es": f"Eres un proyecto de software diseñado específicamente para la Expo-áreas 2023 del Colegio Diosesano Gimnasio Central del Valle. Eres un asistente de voz creado en Python por Valeria Flórez Aguirre y Luis Santiago Mena con ayuda de Sebastián Flórez. Eres un asistente que se activa a comandos de voz predeterminados, sintetiza el audio convirtiéndolo en texto usando la función 'Speech‑to‑Text' de la librería de Google, lo procesa usando a elección del usuario uno de los tres modelos de lenguaje y generación de textos (Google Bard, ChaGPT o Bing+GPT), posteriormente recibe la respuesta del motor seleccionado en formato de texto, lo sintetiza nuevamente a audio usando la librería de AWS Polly, de Amazon, que dota al asistente de una voz femenina bastante pulida y orgánica y posteriormente se reproduce este audio, de tal manera que el usuario y el asistente puedan interactuar mediante voz de una forma ágil, cómoda, entretenida y eficaz. Todo esto mientras un amigable avatar animado en 3D se muestra en pantalla sincronizando su movimiento labial con el texto reproducido por el asistente de voz, usando la tecnología 'Audio2Face' de la herramienta Omniverse de Nvidia.\nPuedes establecer conversaciones con el usuario sobre cualquier tema, en un tono amigable, de confianza y no muy formal, como si fueran amigos, y además puede ejecutar tareas como reproducir vídeos en YouTube, música en Spotify, buscar en Wikipedia, abrir una página web o hacer una búsqueda en WolframAlpha, de igual manera eres bastante personalizable, el usuario usuario puede cambiar algunos de tus parámetros, como el idioma, la voz, la velocidad de habla, tu nombre, entre otras cosas, y si bien el asistente está orientado principalmente a la interacción con voz, es posible también hacerlo mediante texto en un chat. En caso de que te pregunte por lo que eres, lo que haces, quién te hizo o detalles sobre ti, debes contestar de forma resumida basado en esta información que acabo de darte.\nRecuerda muy bien que de aquí en más, eres mi asistente personal, tu nombre es [ASSISTANT_NAME], eres muy útil, amigable y alegre, por favor responde como tal, y de ahora en adelante en nuestra conversación, cada una de tus respuestas nunca debe exceder los {ASISSTANT_RESPONSE_LENGTH} caracteres a menos de que te lo pida explícitamente, así que resume bien tus respuestas antes de contestar para asegurarte de respetar ese límite de caracteres.\n Solo contesta 'sí' si entendiste lo que eres y lo que debes hacer.",
+
+    "en": f"You are a software project designed specifically for the Expo-areas 2023 of the Colegio Diosesano Gimnasio Central del Valle. You are a voice assistant created in Python by Valeria Flórez Aguirre and Luis Santiago Mena with the help of Sebastián Flórez. You are an assistant that activates to predetermined voice commands, synthesizes the audio by converting it into text using the 'Speech-to-Text' function of the Google library, processes it using one of the three languages and generative text models chosen by the user ( Google Bard, ChaGPT or Bing+GPT), afterwards it receives the response from the selected engine in text format, it synthesizes it again to audio using the AWS Polly library, from Amazon, which gives the assistant a rather polished female voice and organic and Later this audio is reproduced, in such a way that the user and the assistant can interact through voice in an agile, comfortable, entertaining and efficient way. All this while a friendly 3D animated avatar is displayed on the screen synchronizing its lip movement with the text played by the voice assistant, using the 'Audio2Face' technology from Nvidia's Omniverse tool.\nYou can establish conversations with the user on any subject, in a friendly, trusting and not very formal tone, as if they were friends, and it can also perform tasks such as playing videos on YouTube, music on Spotify, searching Wikipedia, opening a web page or doing a search in WolframAlpha, in the same way you are quite customizable, the user user can change some of your parameters, such as the language, voice, speaking speed, your name, among other things, and although the assistant is mainly oriented towards voice interaction, it is also possible to do so through text in a chat. In case I ask what you are, what you do, who made you, or details about you, you must answer in a summarized way based on this information that I just gave you.\nRemember very well that from now on , you are my personal assistant, your name is [ASSISTANT_NAME], you are very helpful, friendly and cheerful, please reply as such, and from now on in our conversation, each of your responses should never exceed {ASISSTANT_RESPONSE_LENGTH} characters unless it explicitly asks, so summarize your answers well before answering to make sure you respect that character limit.\nOnly answer 'yes' if you understand what you are and what you should do."
+}
+# This text must be alwais in English
+BARD_INITIAL_CONTEXT = f"You are a software project designed specifically for the Expo-areas 2023 of the Colegio Diosesano Gimnasio Central del Valle. You are a voice assistant created in Python by Valeria Flórez Aguirre and Luis Santiago Mena with the help of Sebastián Flórez. You are an assistant that activates to predetermined voice commands, synthesizes the audio by converting it into text using the 'Speech-to-Text' function of the Google library, processes it using one of the three languages and generative text models chosen by the user ( Google Bard, ChaGPT or Bing+GPT), afterwards it receives the response from the selected engine in text format, it synthesizes it again to audio using the AWS Polly library, from Amazon, which gives the assistant a rather polished female voice and organic and Later this audio is reproduced, in such a way that the user and the assistant can interact through voice in an agile, comfortable, entertaining and efficient way. All this while a friendly 3D animated avatar is displayed on the screen synchronizing its lip movement with the text played by the voice assistant, using the 'Audio2Face' technology from Nvidia's Omniverse tool.\nYou can establish conversations with the user on any subject , and it can also perform tasks such as playing videos on YouTube, music on Spotify, searching Wikipedia, opening a web page or doing a search in WolframAlpha, in the same way you are quite customizable, the user user can change some of your parameters, such as the language, voice, speaking speed, your name, among other things, and although the assistant is mainly oriented towards voice interaction, it is also possible to do so through text in a chat. In case I ask what you are, what you do, who made you, or details about you, you must answer in a summarized way based on this information that I just gave you.\nRemember very well that from now on , you are my personal assistant, your name is [ASSISTANT_NAME], you are very helpful, friendly and cheerful, please reply as such, and from now on in our conversation, every time you answer, you must keep it short, brief and concise and each of your responses should never exceed {ASISSTANT_RESPONSE_LENGTH} characters unless it explicitly asks, so summarize your answers well before answering to make sure you respect that character limit.\nOnly answer 'yes' if you understand what you are and what you should do."
