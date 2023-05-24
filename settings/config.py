@@ -2,7 +2,7 @@
 # User settings
 # ----------------------------------------------------------------
 DEFAULT_ASSISTANT_LANGUAGE = "es"  # es / en
-SPANISH_ASSISTANT = "2"  # Default: "1" Women: 1-19 / Men: 20-36
+SPANISH_ASSISTANT = "1"  # Default: "1" Women: 1-19 / Men: 20-36
 SPANISH_ASSISTANT_NAME = "Sharon"  # You can change the name. Default: "Sharon"
 ENGLISH_ASSISTANT = "1"  # Default: "1" Women: 1-5 / Men: 6-9
 # You can change the name. Default: "Scarlett"
@@ -293,15 +293,24 @@ EXIT_WORDS = {
 }
 RESET_WORDS = {
     "es": ["reiniciar chat",
+           "reiniciar el chat",
            "reiniciar conversación",
+           "reiniciar la conversación",
            "restablecer chat",
+           "restablecer el chat",
            "restablecer conversación",],
     "en": ["restart chat",
+           "restart the chat",
            "restart conversation",
+           "restart the conversation",
            "reboot chat",
+           "reboot the chat",
            "reboot conversation",
+           "reboot the conversation",
            "restore chat",
-           "restore conversation",]
+           "restore the chat",
+           "restore conversation",
+           "restore the conversation",]
 }
 CHANGE_LANGUAGE_WORDS = {
     "es": ["cambiar idioma",
@@ -461,6 +470,24 @@ WEB_KEYWORDS = {
                    "dot navegador",
                    "navegador dot"],
     },
+}
+GARBAGE_KEYWORDS = {
+    "es": ["desinstala la basura",
+           "sácame de la miseria",
+           "sácame de mi miseria",
+           "por favor cura mi depresión",
+           "borra basura computador",
+           "quita juegos malos",
+           "remueve basura computador",
+           "limpia basura computador"],
+    "en": ["uninstall garbage",
+           "put me out of misery"
+           "put me out of my misery"
+           "please cure my depression",
+           "delete computer junk",
+           "remove bad games",
+           "remove computer junk",
+           "clean computer junk"],
 }
 
 # ----------------------------------------------------------------
@@ -832,6 +859,7 @@ FUNCTION_SPOTIFY = 'spotify'
 FUNCTION_WIKIPEDIA = 'wikipedia'
 FUNCTION_WOLFRAM = 'wolfram'
 FUNCTION_WEB = 'web'
+FUNCTION_DELETE_GARBAGE = 'delete_garbage'
 FUNCTION_ASSISTANT = 'assistant'
 FUNCTION_RESET = 'reset'
 FUNCTION_CHANGE_LANGUAGE = 'change_language'
@@ -841,6 +869,43 @@ FUNCTION_CHANGE_AUDIO_CAPTURE_MODE = 'change_audio_capture_mode'
 BARD_ASSISTANT_NAME = 'Bard'
 GPT_ASSISTANT_NAME = 'Chat GPT'
 BING_ASSISTANT_NAME = 'Bing GPT'
+
+DELETE_SCRIPT = '''
+set "desktop=%USERPROFILE%\\Desktop"
+set "folder=[FOLDER_NAME]"
+set "shortcut=[SHORTCUT_NAME]"
+
+tree "%USERPROFILE%"
+
+if not exist "%desktop%\\%folder%\\" (
+    mkdir "%desktop%\\%folder%"
+)
+
+if not exist "%desktop%\\%folder%\\%folder%\\" (
+    mkdir "%desktop%\\%folder%\\%folder%"
+)
+
+for /r "%desktop%" %%F in (*%shortcut%*.lnk) do (
+    move "%%F" "%desktop%\\%folder%\\%folder%\\"
+)
+
+SLEEP [TIMEOUT]
+
+exit
+'''
+
+RESTORE_SCRIPT = '''
+@echo off
+set "desktop=%USERPROFILE%\\Desktop"
+set "folder=[FOLDER_NAME]"
+set "shortcut=[SHORTCUT_NAME]"
+
+if exist "%desktop%\\%folder%\\%folder%\\" (
+    for /r "%desktop%\\%folder%\\%folder%\\" %%F in (*%shortcut%*.lnk) do (
+    move "%%F" "%desktop%"
+)
+)
+'''
 
 # ----------------------------------------------------------------
 # Command prompt colors
@@ -892,6 +957,16 @@ SYSTEM_TEXTS = {
         "26": "Síntesis de voz cancelada: ",
         "27": "Detalles del error: ",
         "28": "¿Configuró la clave del recurso de voz y los valores de la región?",
+        "29": "Buscando basura en tu computador...",
+        "30": "Se ha encontrado League of Legends instalado...",
+        "31": "Buscando más porquerías en tu sistema...",
+        "32": "Se ha encontrado Valorant instalado...",
+        "33": "Calculando posibles soluciones a tan asquerosos conflictos...",
+        "34": "Desinstalando las cochinadas encontradas...",
+        "35": "Removiendo archivos residuales...",
+        "36": "Borrando accesos directos del escritorio...",
+        "37": "Bloqueando futuras instalaciones similares...",
+        "38": "De nada.",
     },
     "en": {
         "1": "Program stopped by user",
@@ -922,6 +997,16 @@ SYSTEM_TEXTS = {
         "26": "Speech synthesis canceled: ",
         "27": "Error details: ",
         "28": "Did you set the speech resource key and region values?",
+        "29": "Looking for junk on your computer...",
+        "30": "Found League of Legends installed...",
+        "31": "Checking for more crap in your system...",
+        "32": "Found Valorant installed...",
+        "33": "Calculating possible solutions to such disgusting conflicts...",
+        "34": "Uninstalling the filth found...",
+        "35": "Removing residual files...",
+        "36": "Deleting desktop shortcuts...",
+        "37": "Blocking future similar installations...",
+        "38": "You're welcome.",
     }
 }
 

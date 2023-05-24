@@ -1,4 +1,5 @@
 audio/response.mp3
+cache
 .env
 settings/__pycache__
 .vscode

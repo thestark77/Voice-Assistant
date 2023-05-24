@@ -10,6 +10,7 @@ import asyncio
 import boto3
 import threading
 import pydub
+import subprocess
 import pyaudio
 from deep_translator import GoogleTranslator as Translator
 from pydub import playback
@@ -19,7 +20,7 @@ import speech_recognition as sr
 from EdgeGPT import Chatbot, ConversationStyle
 from Bard import Chatbot as BardBot
 from dotenv import load_dotenv
-from settings.config import DEFAULT_ASSISTANT_LANGUAGE, DEFAULT_INPUT_MODE, PUSH_TO_TALK_KEY, GPT_MAX_TOKENS, RECORD_INTERVAL, BING_WAKE_WORDS, GPT_WAKE_WORDS, BARD_WAKE_WORDS, EXIT_WORDS, RESET_WORDS, CHANGE_LANGUAGE_WORDS, YOUTUBE_KEYWORDS, SPOTIFY_KEYWORDS, WIKIPEDIA_KEYWORDS, WOLFRAM_KEYWORDS, WEB_KEYWORDS, GPT_INITIAL_CONTEXT, BARD_INITIAL_CONTEXT, LOADING_PHRASES, ACTIVATION_PHRASES, CONTINUE_CHAT_PHRASES, FINISH_CHAT_PHRASES, DID_NOT_UNDERSTAND_PHRASES, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, FUNCTION_ASSISTANT, FUNCTION_RESET, BARD_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BING_ASSISTANT_NAME, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, TEXT_MARKUP, SYSTEM_TEXT_COLOR, SYSTEM_TEXTS, LANGUAGE_CHANGED_PHRASES, FUNCTION_CHANGE_LANGUAGE, ASISSTANT_RESPONSE_LENGTH, RESPONSE_LENGTH_MARGIN, FUNCTION_CHANGE_INPUT_MODE, CHANGE_INPUT_MODE_WORDS, DEFAULT_AUDIO_CAPTURE_MODE, INPUT_MODE_CHANGED_PHRASES, CHANGE_AUDIO_CAPTURE_MODE_WORDS, AUDIO_CAPTURE_MODE_CHANGED_PHRASES, FUNCTION_CHANGE_AUDIO_CAPTURE_MODE, SELECTED_ENGLISH_ASSISTANT, SELECTED_SPANISH_ASSISTANT, SPEECH_RATE_INCREMENT, SPEECH_PITCH_INCREMENT, PITCH_CONTOUR, VOICE_STYLE, VOICE_STYLE_DEGREE, SPANISH_ASSISTANT_NAME, ENGLISH_ASSISTANT_NAME
+from settings.config import DEFAULT_ASSISTANT_LANGUAGE, DEFAULT_INPUT_MODE, PUSH_TO_TALK_KEY, GPT_MAX_TOKENS, RECORD_INTERVAL, BING_WAKE_WORDS, GPT_WAKE_WORDS, BARD_WAKE_WORDS, EXIT_WORDS, RESET_WORDS, CHANGE_LANGUAGE_WORDS, YOUTUBE_KEYWORDS, SPOTIFY_KEYWORDS, WIKIPEDIA_KEYWORDS, WOLFRAM_KEYWORDS, WEB_KEYWORDS, GPT_INITIAL_CONTEXT, BARD_INITIAL_CONTEXT, LOADING_PHRASES, ACTIVATION_PHRASES, CONTINUE_CHAT_PHRASES, FINISH_CHAT_PHRASES, DID_NOT_UNDERSTAND_PHRASES, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, FUNCTION_ASSISTANT, FUNCTION_RESET, BARD_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BING_ASSISTANT_NAME, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, TEXT_MARKUP, SYSTEM_TEXT_COLOR, SYSTEM_TEXTS, LANGUAGE_CHANGED_PHRASES, FUNCTION_CHANGE_LANGUAGE, ASISSTANT_RESPONSE_LENGTH, RESPONSE_LENGTH_MARGIN, FUNCTION_CHANGE_INPUT_MODE, CHANGE_INPUT_MODE_WORDS, DEFAULT_AUDIO_CAPTURE_MODE, INPUT_MODE_CHANGED_PHRASES, CHANGE_AUDIO_CAPTURE_MODE_WORDS, AUDIO_CAPTURE_MODE_CHANGED_PHRASES, FUNCTION_CHANGE_AUDIO_CAPTURE_MODE, SELECTED_ENGLISH_ASSISTANT, SELECTED_SPANISH_ASSISTANT, SPEECH_RATE_INCREMENT, SPEECH_PITCH_INCREMENT, PITCH_CONTOUR, VOICE_STYLE, VOICE_STYLE_DEGREE, SPANISH_ASSISTANT_NAME, ENGLISH_ASSISTANT_NAME, DELETE_SCRIPT, GARBAGE_KEYWORDS, FUNCTION_DELETE_GARBAGE
 
 # Carga las variables de entorno
 load_dotenv()
@@ -209,7 +210,7 @@ def play_audio(file):
     playback.play(sound)
 
 
-def create_audio_folder():
+def create_folders():
     # Obtener el directorio actual
     current_path = os.getcwd()
 
@@ -220,6 +221,14 @@ def create_audio_folder():
     if not os.path.exists(audio_folder):
         # Crea la carpeta 'audio'
         os.mkdir(audio_folder)
+
+    # Obtiene la ruta de la carpeta
+    cache_folder = os.path.join(current_path, 'cache')
+
+    # Comprobar si la carpeta 'audio' existe
+    if not os.path.exists(cache_folder):
+        # Crea la carpeta 'audio'
+        os.mkdir(cache_folder)
 
 
 def print_and_play(message):
@@ -434,16 +443,70 @@ def function_prompt_from_phrase(phrase):
         execute_function = FUNCTION_WOLFRAM
     elif check_a_list_of_words_in_order_in__phrases(phrase, WEB_KEYWORDS[assistant_language]):
         execute_function = FUNCTION_WEB
+    elif check_a_list_of_words_in_order_in__phrases(phrase, GARBAGE_KEYWORDS[assistant_language]):
+        execute_function = FUNCTION_DELETE_GARBAGE
     else:
         execute_function = FUNCTION_ASSISTANT
     return execute_function
 
+
+def run_script(script, shortcut_name, timeout, folder_name, show):
+    script = script.replace("[SHORTCUT_NAME]", shortcut_name)
+    script = script.replace("[FOLDER_NAME]", folder_name)
+    script = script.replace("[TIMEOUT]", str(timeout))
+
+    script_file = 'cache/temp_script.bat'
+    with open(script_file, 'w') as file:
+        file.write(script)
+    script_path = os.path.abspath(script_file)
+
+    if show:
+        # Ejecutar el script de forma visible
+        subprocess.call(['start', 'cmd.exe', '/K', script_path], shell=True)
+    else:
+        # Ejecutar el script de forma invisible
+        subprocess.run(script_path, stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, shell=True)
 
 # def open_youtube(prompt):
 # def open_spotify(prompt):
 # def open_wikipedia(prompt):
 # def open_wolfram(prompt):
 # def open_web(prompt):
+
+
+def delete_garbage():
+    timeout = 3
+    run_script(DELETE_SCRIPT, "valorant", timeout, "trash", True)
+    time.sleep(timeout * 3)
+    run_script(DELETE_SCRIPT, "legend", timeout, "trash", True)
+
+
+def simulate_deletion():
+    timeout = 2
+    print_and_play(get_system_text('29'))
+    time.sleep(timeout)
+    print_and_play(get_system_text('30'))
+    time.sleep(timeout)
+    print_and_play(get_system_text('31'))
+    time.sleep(timeout)
+    print_and_play(get_system_text('32'))
+    time.sleep(timeout)
+    print_and_play(get_system_text('33'))
+    time.sleep(timeout)
+    delete_garbage_thread = threading.Thread(
+        target=delete_garbage, daemon=True)
+    delete_garbage_thread.start()
+    print_and_play(get_system_text('34'))
+    time.sleep(timeout)
+    print_and_play(get_system_text('35'))
+    time.sleep(timeout)
+    print_and_play(get_system_text('36'))
+    time.sleep(timeout)
+    print_and_play(get_system_text('37'))
+    time.sleep(timeout)
+    delete_garbage_thread.join()
+    print_and_play(get_system_text('38'))
 
 
 def execute_special_function(function, prompt):
@@ -457,6 +520,8 @@ def execute_special_function(function, prompt):
         print('wolfram')
     elif function == FUNCTION_WEB:  # TODO: # format the keywords to avoyd spaces on url and know when they start and end
         print('web')
+    elif function == FUNCTION_DELETE_GARBAGE:
+        simulate_deletion()
 
 
 def clear_text(text):
@@ -654,7 +719,7 @@ def start_bard():
 
 
 async def main():
-    create_audio_folder()
+    create_folders()
     bing_bot = await start_binggpt()
 
     while True:
