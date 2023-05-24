@@ -283,7 +283,7 @@ SELECTED_ENGLISH_ASSISTANT = VOICE_ASSISTANTS_LIST['en'][ENGLISH_ASSISTANT]
 # ----------------------------------------------------------------
 # Keywords
 # ----------------------------------------------------------------
-BING_WAKE_WORDS = ["internet", "bing", "online", "hello", "hola", ]
+BING_WAKE_WORDS = ["consulta", "consult", "bing", "online",]
 GPT_WAKE_WORDS = ["chat", "gpt"]
 BARD_WAKE_WORDS = ["asistente", "assistant", "google"]
 
@@ -368,114 +368,110 @@ CHANGE_AUDIO_CAPTURE_MODE_WORDS = {
            "change audio capture method"]
 }
 YOUTUBE_KEYWORDS = {
-    "es": ["reproduce en youtube",
+    "es": ["busca youtube",
+           "abre youtube",
+           "reproduce youtube",
            "pon en youtube",
            "escuchar en youtube",
-           "ver en youtube"],
-    "en": ["play on youtube",
+           "ver en youtube"
+           ],
+    "en": ["search youtube",
+           "open youtube",
+           "play on youtube",
            "put on youtube",
            "listen on youtube",
-           "i want watch on youtube"],
+           "i want watch on youtube"
+           ],
 }
 SPOTIFY_KEYWORDS = {
-    "es": ["reproduce en spotify",
+    "es": ["busca spotify",
+           "abre spotify",
+           "reproduce en spotify",
            "pon en youtube",
-           "escuchar en youtube",],
+           "escuchar en youtube",
+           ],
     "en": ["play on spotify",
            "put on spotify",
-           "listen on spotify"],
+           "listen on spotify"
+           ],
 }
 WIKIPEDIA_KEYWORDS = {
     "es": ["busca wikipedia",
+           "buscar wikipedia",
            "abre wikipedia",
-           "según wikipedia",
            "resultado wikipedia",
-           "ve a wikipedia"],
+           "ve a wikipedia"
+           ],
     "en": ["search on wikipedia",
            "open wikipedia",
-           "according to wikipedia",
            "look for wikipedia",
            "look up wikipedia",
            "look out wikipedia",
            "seek for wikipedia",
            "result wikipedia",
-           "go wikipedia"],
+           "go wikipedia"
+           ],
 }
 WOLFRAM_KEYWORDS = {
-    "es": ["busca en wolfram",
-           "resultado wolfram",
+    "es": ["abre wolfram",
+           "busca wolfram",
+           "abre warframe",
+           "busca warframe",
            "consulta wolfram",
-           "realiza wolfram",
-           "según wolfram",
-           "respuesta wolfram",
-           "resuelve wolfram"],
-    "en": ["search wolfram",
-           "result wolfram",
+           ],
+    "en": ["open wolfram",
+           "search wolfram",
+           "open warframe",
+           "search warframe",
            "consult for wolfram",
-           "look up wolfram",
-           "look out wolfram",
-           "perform wolfram",
-           "carry out wolfram",
-           "do wolfram",
-           "realize wolfram",
-           "seek for wolfram",],
+           ],
+}
+EXIT_WOLFRAM_KEYWORDS = {
+    "es": ["salir wolfram",
+           "cerrar wolfram",
+           "terminar wolfram",
+           "terminar conversación",
+           ],
+    "en": ["exit wolfram",
+           "close wolfram",
+           "end conversation",
+           "finish conversation",
+           ],
+}
+WHATSAPP_KEYWORDS = {
+    "es": ["abre whatsapp",
+           "abrir whatsapp",
+           "mensaje whatsapp",
+           "envía whatsapp",],
+    "en": ["open whatsapp",
+           "message whatsapp",
+           "send whatsapp",],
+}
+EXIT_WHATSAPP_KEYWORDS = {
+    "es": ["salir whatsapp",
+           "cerrar whatsapp",
+           "cerrar conversación",
+           "terminar conversación",
+           "final conversación",],
+    "en": ["exit whatsapp",
+           "close whatsapp",
+           "close conversación",
+           "finish conversación",
+           "end conversación",
+           "terminate conversación",],
 }
 WEB_KEYWORDS = {
-    "es": {
-        "keywords": ["ve a .",
-                     "abre .",
-                     "navega a .",
-                     ". navegador",
-                     "navegador .",
-                     "abre punto",
-                     "navega a punto",
-                     "punto navegador",
-                     "navegador punto"],
-        "remove": ["ve",
-                   "a",
-                   "abre",
-                   "navegador",
-                   "navega",
-                   "punto",
-                   "a",
-                   "página",
-                   " a ",
-                   " de ",
-                   " "]
-    },
-
-    "en": {
-        "keywords": ["go to .",
-                     "open .",
-                     "navigate to .",
-                     "browse .",
-                     ". browser",
-                     "browser .",
-                     "go to dot",
-                     "open dot",
-                     "navigate a dot",
-                     "browse a dot",
-                     "dot navegador",
-                     "navegador dot"],
-        "remove": ["go to .",
-                   "open .",
-                   "navigate to .",
-                   "browse .",
-                   ". browser",
-                   "browser .",
-                   "go to dot",
-                   "open dot",
-                   "navigate a dot",
-                   "browse a dot",
-                   "dot navegador",
-                   "navegador dot"],
-    },
+    "es": ["abre internet",
+           "navega internet",
+           ],
+    "en": ["open internet",
+           "browse internet",],
 }
 DELETE_GARBAGE_KEYWORDS = {
     "es": ["desinstala la basura",
            "sácame de la miseria",
            "sácame de mi miseria",
-           "por favor cura mi depresión",
+           "cura mi depresión",
            "borra basura computador",
            "quita juegos malos",
            "remueve basura computador",
@@ -483,7 +479,7 @@ DELETE_GARBAGE_KEYWORDS = {
     "en": ["uninstall garbage",
            "put me out of misery"
            "put me out of my misery"
-           "please cure my depression",
+           "cure my depression",
            "delete computer junk",
            "remove bad games",
            "remove computer junk",
@@ -873,6 +869,7 @@ FUNCTION_SPOTIFY = 'spotify'
 FUNCTION_WIKIPEDIA = 'wikipedia'
 FUNCTION_WOLFRAM = 'wolfram'
 FUNCTION_WEB = 'web'
+FUNCTION_WHATSAPP = 'whatsapp'
 FUNCTION_DELETE_GARBAGE = 'delete_garbage'
 FUNCTION_RESTORE_GARBAGE = 'restore_garbage'
 FUNCTION_ASSISTANT = 'assistant'
@@ -880,13 +877,13 @@ FUNCTION_RESET = 'reset'
 FUNCTION_CHANGE_LANGUAGE = 'change_language'
 FUNCTION_CHANGE_INPUT_MODE = 'change_input_mode'
 FUNCTION_CHANGE_AUDIO_CAPTURE_MODE = 'change_audio_capture_mode'
+SYSTEM_TASK = 'system_task'
 
 BARD_ASSISTANT_NAME = 'Bard'
 GPT_ASSISTANT_NAME = 'Chat GPT'
 BING_ASSISTANT_NAME = 'Bing GPT'
 
 DELETE_SCRIPT = '''
-@echo off
 set "desktop=%USERPROFILE%\\Desktop"
 set "folder=[FOLDER_NAME]"
 set "shortcut=[SHORTCUT_NAME]"
@@ -985,6 +982,35 @@ SYSTEM_TEXTS = {
         "38": "De nada.",
         "39": "No me jodas, ¿Es en serio?. Bueno, ya qué...",
         "40": "Ahí tienes tu porquería de vuelta.",
+        "41": "Error al ejecutar el script: ",
+        "42": "¿Qué quieres que busque en YouTube?",
+        "43": "Reproduciendo ",
+        "44": " en YouTube",
+        "45": "¿Qué quieres que busque en Spotify?",
+        "46": " en Spotify",
+        "47": "No se han encontrado resultados",
+        "48": "¿Qué quieres que busque en Wikipedia?",
+        "49": "La búsqueda es ambigua. Por favor, sé más específico",
+        "50": "No se encontró el artículo en Wikipedia",
+        "51": "Ocurrió un error de tiempo de espera al acceder a Wikipedia",
+        "52": "La página ha sido redirigida a otra ubicación",
+        "53": "Se produjo un error al abrir la URL",
+        "54": "Ocurrió un error al realizar la búsqueda en Wikipedia",
+        "55": "Según Wikipedia, ",
+        "56": "Wolfram Alpha dice: ",
+        "57": "No se encontró una respuesta adecuada para la consulta.",
+        "58": "Ocurrió un error al consultar Wolfram Alpha",
+        "59": "Dile algo a Wolfram",
+        "60": "Si quieres terminar la conversación con Wolfram, dímelo",
+        "61": "¿Quieres ir a una página web o prefieres buscar en Google?",
+        "62": "¿Qué quieres que busque en Google?",
+        "63": "Escribe la dirección web donde quieres ir",
+        "64": "Escribe el número de teléfono de la persona a quien va dirigido el mensaje",
+        "65": "Dime tu mensaje",
+        "66": "Enviando mensaje...",
+        "67": "Mensaje enviado, si quieres seguir enviando mensajes a este número, dame el mensaje a continuación, si quieres terminar la conversación, solo dímelo",
+        "68": "El número ingresado es inválido, por favor introdúcelo de nuevo... el número, por si acaso",
+        "69": "por favor inténtalo de nuevo",
     },
     "en": {
         "1": "Program stopped by user",
@@ -1027,6 +1053,35 @@ SYSTEM_TEXTS = {
         "38": "You're welcome.",
         "39": "No way, are you serious? Well, I give up...",
         "40": "There's your garbage back.",
+        "41": "Error executing the script: ",
+        "42": "What do you want me to search on YouTube?",
+        "43": "Playing ",
+        "44": " on YouTube",
+        "45": "What do you want me to search on Spotify?",
+        "46": " on Spotify",
+        "47": "No results found",
+        "48": "What do you want me to search on Wikipedia?",
+        "49": "The search is ambiguous. Please be more specific",
+        "50": "Wikipedia article not found",
+        "51": "A timeout error occurred while accessing Wikipedia",
+        "52": "The page has been redirected to another location",
+        "53": "There was an error opening the URL",
+        "54": "An error occurred while searching Wikipedia",
+        "55": "According to Wikipedia, ",
+        "56": "Wolfram Alpha says: ",
+        "57": "No suitable response was found for the query.",
+        "58": "An error occurred while querying Wolfram Alpha",
+        "59": "Say something to Wolfram",
+        "60": "If you want to end the conversation with Wolfram, tell me",
+        "61": "Do you want to go to a web page or do you prefer to search on Google?",
+        "62": "What do you want me to search for on Google?",
+        "63": "Write the web address where you want to go",
+        "64": "Enter the phone number of the person to whom the message is addressed",
+        "65": "Tell me your message",
+        "66": "Sending message...",
+        "67": "Message sent, if you want to keep sending messages to this number, give me the message below, if you want to end the conversation, just tell me",
+        "68": "The number entered is invalid, please enter it again... the number, just in case",
+        "69": "please try again",
     }
 }
 

@@ -1,3 +1,4 @@
+from settings.config import DEFAULT_ASSISTANT_LANGUAGE, DEFAULT_INPUT_MODE, PUSH_TO_TALK_KEY, GPT_MAX_TOKENS, RECORD_INTERVAL, BING_WAKE_WORDS, GPT_WAKE_WORDS, BARD_WAKE_WORDS, EXIT_WORDS, RESET_WORDS, CHANGE_LANGUAGE_WORDS, YOUTUBE_KEYWORDS, SPOTIFY_KEYWORDS, WIKIPEDIA_KEYWORDS, WOLFRAM_KEYWORDS, WEB_KEYWORDS, GPT_INITIAL_CONTEXT, BARD_INITIAL_CONTEXT, LOADING_PHRASES, ACTIVATION_PHRASES, CONTINUE_CHAT_PHRASES, FINISH_CHAT_PHRASES, DID_NOT_UNDERSTAND_PHRASES, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, FUNCTION_ASSISTANT, FUNCTION_RESET, BARD_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BING_ASSISTANT_NAME, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, TEXT_MARKUP, SYSTEM_TEXT_COLOR, SYSTEM_TEXTS, LANGUAGE_CHANGED_PHRASES, FUNCTION_CHANGE_LANGUAGE, ASISSTANT_RESPONSE_LENGTH, RESPONSE_LENGTH_MARGIN, FUNCTION_CHANGE_INPUT_MODE, CHANGE_INPUT_MODE_WORDS, DEFAULT_AUDIO_CAPTURE_MODE, INPUT_MODE_CHANGED_PHRASES, CHANGE_AUDIO_CAPTURE_MODE_WORDS, AUDIO_CAPTURE_MODE_CHANGED_PHRASES, FUNCTION_CHANGE_AUDIO_CAPTURE_MODE, SELECTED_ENGLISH_ASSISTANT, SELECTED_SPANISH_ASSISTANT, SPEECH_RATE_INCREMENT, SPEECH_PITCH_INCREMENT, PITCH_CONTOUR, VOICE_STYLE, VOICE_STYLE_DEGREE, SPANISH_ASSISTANT_NAME, ENGLISH_ASSISTANT_NAME, DELETE_SCRIPT, DELETE_GARBAGE_KEYWORDS, FUNCTION_DELETE_GARBAGE, RESTORE_GARBAGE_KEYWORDS, FUNCTION_RESTORE_GARBAGE, RESTORE_SCRIPT, SYSTEM_TASK, WHATSAPP_KEYWORDS, FUNCTION_WHATSAPP, EXIT_WOLFRAM_KEYWORDS, EXIT_WHATSAPP_KEYWORDS
 import signal
 import os
 import sys
@@ -11,6 +12,14 @@ import boto3
 import threading
 import pydub
 import subprocess
+import pywhatkit
+import webbrowser
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+import wikipedia
+import wolframalpha
+import pyautogui
+import urllib.parse
 import pyaudio
 from deep_translator import GoogleTranslator as Translator
 from pydub import playback
@@ -20,7 +29,9 @@ import speech_recognition as sr
 from EdgeGPT import Chatbot, ConversationStyle
 from Bard import Chatbot as BardBot
 from dotenv import load_dotenv
-from settings.config import DEFAULT_ASSISTANT_LANGUAGE, DEFAULT_INPUT_MODE, PUSH_TO_TALK_KEY, GPT_MAX_TOKENS, RECORD_INTERVAL, BING_WAKE_WORDS, GPT_WAKE_WORDS, BARD_WAKE_WORDS, EXIT_WORDS, RESET_WORDS, CHANGE_LANGUAGE_WORDS, YOUTUBE_KEYWORDS, SPOTIFY_KEYWORDS, WIKIPEDIA_KEYWORDS, WOLFRAM_KEYWORDS, WEB_KEYWORDS, GPT_INITIAL_CONTEXT, BARD_INITIAL_CONTEXT, LOADING_PHRASES, ACTIVATION_PHRASES, CONTINUE_CHAT_PHRASES, FINISH_CHAT_PHRASES, DID_NOT_UNDERSTAND_PHRASES, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, FUNCTION_ASSISTANT, FUNCTION_RESET, BARD_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BING_ASSISTANT_NAME, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, TEXT_MARKUP, SYSTEM_TEXT_COLOR, SYSTEM_TEXTS, LANGUAGE_CHANGED_PHRASES, FUNCTION_CHANGE_LANGUAGE, ASISSTANT_RESPONSE_LENGTH, RESPONSE_LENGTH_MARGIN, FUNCTION_CHANGE_INPUT_MODE, CHANGE_INPUT_MODE_WORDS, DEFAULT_AUDIO_CAPTURE_MODE, INPUT_MODE_CHANGED_PHRASES, CHANGE_AUDIO_CAPTURE_MODE_WORDS, AUDIO_CAPTURE_MODE_CHANGED_PHRASES, FUNCTION_CHANGE_AUDIO_CAPTURE_MODE, SELECTED_ENGLISH_ASSISTANT, SELECTED_SPANISH_ASSISTANT, SPEECH_RATE_INCREMENT, SPEECH_PITCH_INCREMENT, PITCH_CONTOUR, VOICE_STYLE, VOICE_STYLE_DEGREE, SPANISH_ASSISTANT_NAME, ENGLISH_ASSISTANT_NAME, DELETE_SCRIPT, DELETE_GARBAGE_KEYWORDS, FUNCTION_DELETE_GARBAGE, RESTORE_GARBAGE_KEYWORDS, FUNCTION_RESTORE_GARBAGE, RESTORE_SCRIPT
+import warnings
+from bs4 import GuessedAtParserWarning
+warnings.filterwarnings('ignore', category=GuessedAtParserWarning)
 
 # Carga las variables de entorno
 load_dotenv()
@@ -36,8 +47,12 @@ AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
 BARD_TOKEN = os.environ['BARD_TOKEN']
 AZURE_SPEECH_API_KEY = os.environ['AZURE_SPEECH_API_KEY']
 AZURE_SPEECH_REGION = os.environ['AZURE_SPEECH_REGION']
+SPOTIFY_ID_CLIENT = os.environ['SPOTIFY_ID_CLIENT']
+SPOTIFY_CLIENT_SECRET = os.environ['SPOTIFY_CLIENT_SECRET']
+WOLFRAM_API_KEY = os.environ['WOLFRAM_API_KEY']
 # Initialize the OpenAI API
 openai.api_key = GPT_API_KEY
+
 
 # Initialize the AWS BOTO3 API
 
@@ -51,6 +66,14 @@ azure_speech_config = speechsdk.SpeechConfig(
     region=AZURE_SPEECH_REGION,
 )
 audio_config = AudioOutputConfig(use_default_speaker=True)
+
+# Autenticación
+client_credentials_manager = SpotifyClientCredentials(
+    SPOTIFY_ID_CLIENT, SPOTIFY_CLIENT_SECRET)
+spotify = spotipy.Spotify(
+    client_credentials_manager=client_credentials_manager)
+
+wolframClient = wolframalpha.Client(WOLFRAM_API_KEY)
 
 
 def handle_keyboard_interrupt(signal, frame):
@@ -202,10 +225,10 @@ def synthesize_speech(text, output_filename):
             VoiceId=voice_id,
             Engine='neural'
         )
+        with open(output_filename, 'wb') as f:
+            f.write(response['AudioStream'].read())
     except Exception as e:
         print_system_output(get_system_text('3', ' synthesize_speech: '), e)
-    with open(output_filename, 'wb') as f:
-        f.write(response['AudioStream'].read())
 
 
 def play_audio(file):
@@ -256,8 +279,8 @@ def get_text_from_audio(audio, recognizer, awake=True):
             audio, language=recognition_language)
         phrase = textFromAudio.lower()
         if phrase is not None and phrase.strip() != '':
-            if awake:
-                print_user_output(f"{get_system_text('5')}{phrase}")
+            # if awake:
+            print_user_output(f"{get_system_text('5')}{phrase}")
 
             returning_phrase = phrase
         else:
@@ -347,11 +370,6 @@ def system_functions_from_phrase(phrase):
     elif any_word_of_list_in_phrase(RESET_WORDS[assistant_language], phrase):
         system_function = FUNCTION_RESET
 
-    elif check_a_list_of_words_in_order_in__phrases(phrase, DELETE_GARBAGE_KEYWORDS[assistant_language]):
-        system_function = FUNCTION_DELETE_GARBAGE
-    elif check_a_list_of_words_in_order_in__phrases(phrase, RESTORE_GARBAGE_KEYWORDS[assistant_language]):
-        system_function = FUNCTION_RESTORE_GARBAGE
-
     elif any_word_of_list_in_phrase(CHANGE_INPUT_MODE_WORDS[assistant_language], phrase):
         system_function = FUNCTION_CHANGE_INPUT_MODE
         if input_mode == 'voice':
@@ -384,78 +402,155 @@ def system_functions_from_phrase(phrase):
         print_system_output(f"{get_system_text('25')}{audio_capture_mode}")
 
     elif any_word_of_list_in_phrase(CHANGE_LANGUAGE_WORDS[assistant_language], phrase):
-        system_function = FUNCTION_CHANGE_LANGUAGE
+        system_function = FUNCTION_RESET
+        # system_function = FUNCTION_CHANGE_LANGUAGE
         if assistant_language == 'en':
             change_language_phrase = get_random_phrase(
                 LANGUAGE_CHANGED_PHRASES[assistant_language])
             print_and_play(change_language_phrase)
             assistant_language = "es"
             print_system_output(get_system_text('24'))
-            system_function = FUNCTION_RESET
         else:
             change_language_phrase = get_random_phrase(
                 LANGUAGE_CHANGED_PHRASES[assistant_language])
             print_and_play(change_language_phrase)
             assistant_language = "en"
             print_system_output(get_system_text('24'))
-            system_function = FUNCTION_RESET
 
     return system_function
 
 
-def check_words_in_order_in_a_phrase(phrase, words_list):  # (frase1, frase2)
-    phrase = phrase.split()
-    words_list = words_list.split()
+# def check_words_in_order_in_a_phrase(phrase, words_list):  # (frase1, frase2)
+#     phrase = phrase.split()
+#     words_list = words_list.split()
 
-    # Verificar si todas las palabras de frase2 están en frase1 en el mismo orden
-    if all(word in phrase for word in words_list):
-        # Verificar si el índice de cada palabra en frase1 es igual al índice correspondiente en frase2
-        if all(phrase.index(words_list[i]) == i for i in range(len(words_list))):
-            return True
+#     # Verificar si todas las palabras de frase2 están en frase1 en el mismo orden
+#     if all(word in phrase for word in words_list):
+#         # Verificar si el índice de cada palabra en frase1 es igual al índice correspondiente en frase2
+#         if all(phrase.index(words_list[i]) == i for i in range(len(words_list))):
+#             return True
 
-    return False
+#     return False
 
 
-def check_a_list_of_words_in_order_in__phrases(phrase, list_of_list_of_words):
-    for list in list_of_list_of_words:
-        key_phrase = check_words_in_order_in_a_phrase(phrase, list)
+def check_words_in_order_in_a_phrase(phrase1, phrase2):
+    words_phrase1 = phrase1.split()
+    words_phrase2 = phrase2.split()
+
+    i = 0
+    for palabra in words_phrase2:
+        if i < len(words_phrase1) and palabra == words_phrase1[i]:
+            i += 1
+
+    return i == len(words_phrase1)
+
+
+def check_a_list_of_words_in_order_in_phrases(phrase, list_of_list_of_words):
+    for sentence in list_of_list_of_words:
+        key_phrase = check_words_in_order_in_a_phrase(sentence, phrase)
         if key_phrase:
-            return True
+            return sentence
     return False
 
 
 def wake_word_from_phrase(phrase):
+    function_and_keyphrase = {
+        "function": FUNCTION_ASSISTANT,
+        "key_phrase": ''
+    }
     system_function = system_functions_from_phrase(phrase)
     if system_function != '':
-        wake_word = system_function
+        if system_function == FUNCTION_RESET:
+            function_and_keyphrase = {
+                "function": FUNCTION_RESET,
+                "key_phrase": ''
+            }
+        else:
+            function_and_keyphrase = {
+                "function": SYSTEM_TASK,
+                "key_phrase": ''
+            }
     elif any_word_of_list_in_phrase(BARD_WAKE_WORDS, phrase):
-        wake_word = BARD_ASSISTANT_NAME
+        function_and_keyphrase = {
+            "function": BARD_ASSISTANT_NAME,
+            "key_phrase": ''
+        }
     elif any_word_of_list_in_phrase(GPT_WAKE_WORDS, phrase):
-        wake_word = GPT_ASSISTANT_NAME
+        function_and_keyphrase = {
+            "function": GPT_ASSISTANT_NAME,
+            "key_phrase": ''
+        }
     elif any_word_of_list_in_phrase(BING_WAKE_WORDS, phrase):
-        wake_word = BING_ASSISTANT_NAME
-    else:
-        wake_word = ''
-    return wake_word
+        function_and_keyphrase = {
+            "function": BING_ASSISTANT_NAME,
+            "key_phrase": ''
+        }
+    else:  # Special functions
+        key_phrase = check_a_list_of_words_in_order_in_phrases(
+            phrase, YOUTUBE_KEYWORDS[assistant_language])
+        if key_phrase:
+            function_and_keyphrase = {
+                "function": FUNCTION_YOUTUBE,
+                "key_phrase": key_phrase
+            }
 
+        key_phrase = check_a_list_of_words_in_order_in_phrases(
+            phrase, SPOTIFY_KEYWORDS[assistant_language])
+        if key_phrase:
+            function_and_keyphrase = {
+                "function": FUNCTION_SPOTIFY,
+                "key_phrase": key_phrase
+            }
 
-def function_prompt_from_phrase(phrase):
-    system_function = system_functions_from_phrase(phrase)
-    if system_function != '':
-        execute_function = system_function
-    elif check_a_list_of_words_in_order_in__phrases(phrase, YOUTUBE_KEYWORDS[assistant_language]):
-        execute_function = FUNCTION_YOUTUBE
-    elif check_a_list_of_words_in_order_in__phrases(phrase, SPOTIFY_KEYWORDS[assistant_language]):
-        execute_function = FUNCTION_SPOTIFY
-    elif check_a_list_of_words_in_order_in__phrases(phrase, WIKIPEDIA_KEYWORDS[assistant_language]):
-        execute_function = FUNCTION_WIKIPEDIA
-    elif check_a_list_of_words_in_order_in__phrases(phrase, WOLFRAM_KEYWORDS[assistant_language]):
-        execute_function = FUNCTION_WOLFRAM
-    elif check_a_list_of_words_in_order_in__phrases(phrase, WEB_KEYWORDS[assistant_language]):
-        execute_function = FUNCTION_WEB
-    else:
-        execute_function = FUNCTION_ASSISTANT
-    return execute_function
+        key_phrase = check_a_list_of_words_in_order_in_phrases(
+            phrase, WIKIPEDIA_KEYWORDS[assistant_language])
+        if key_phrase:
+            function_and_keyphrase = {
+                "function": FUNCTION_WIKIPEDIA,
+                "key_phrase": key_phrase
+            }
+
+        key_phrase = check_a_list_of_words_in_order_in_phrases(
+            phrase, WOLFRAM_KEYWORDS[assistant_language])
+        if key_phrase:
+            function_and_keyphrase = {
+                "function": FUNCTION_WOLFRAM,
+                "key_phrase": key_phrase
+            }
+
+        key_phrase = check_a_list_of_words_in_order_in_phrases(
+            phrase, WEB_KEYWORDS[assistant_language])
+        if key_phrase:
+            function_and_keyphrase = {
+                "function": FUNCTION_WEB,
+                "key_phrase": key_phrase
+            }
+
+        key_phrase = check_a_list_of_words_in_order_in_phrases(
+            phrase, WHATSAPP_KEYWORDS[assistant_language])
+        if key_phrase:
+            function_and_keyphrase = {
+                "function": FUNCTION_WHATSAPP,
+                "key_phrase": key_phrase
+            }
+
+        key_phrase = check_a_list_of_words_in_order_in_phrases(
+            phrase, DELETE_GARBAGE_KEYWORDS[assistant_language])
+        if key_phrase:
+            function_and_keyphrase = {
+                "function": FUNCTION_DELETE_GARBAGE,
+                "key_phrase": key_phrase
+            }
+
+        key_phrase = check_a_list_of_words_in_order_in_phrases(
+            phrase, RESTORE_GARBAGE_KEYWORDS[assistant_language])
+        if key_phrase:
+            function_and_keyphrase = {
+                "function": FUNCTION_RESTORE_GARBAGE,
+                "key_phrase": key_phrase
+            }
+
+    return function_and_keyphrase
 
 
 def run_script(script, shortcut_name, timeout, folder_name, show):
@@ -464,23 +559,21 @@ def run_script(script, shortcut_name, timeout, folder_name, show):
     script = script.replace("[TIMEOUT]", str(timeout))
 
     script_file = 'cache/temp_script.bat'
-    with open(script_file, 'w') as file:
-        file.write(script)
-    script_path = os.path.abspath(script_file)
+    try:
+        with open(script_file, 'w') as file:
+            file.write(script)
+        script_path = os.path.abspath(script_file)
 
-    if show:
-        # Ejecutar el script de forma visible
-        subprocess.call(['start', 'cmd.exe', '/K', script_path], shell=True)
-    else:
-        # Ejecutar el script de forma invisible
-        subprocess.run(script_path, stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL, shell=True)
-
-# def open_youtube(prompt):
-# def open_spotify(prompt):
-# def open_wikipedia(prompt):
-# def open_wolfram(prompt):
-# def open_web(prompt):
+        if show:
+            # Ejecutar el script de forma visible
+            subprocess.call(
+                ['start', 'cmd.exe', '/K', script_path], shell=True)
+        else:
+            # Ejecutar el script de forma invisible
+            subprocess.run(script_path, stdout=subprocess.DEVNULL,
+                           stderr=subprocess.DEVNULL, shell=True)
+    except Exception as e:
+        print_system_output(get_system_text('41', ' run_script: '), e)
 
 
 def delete_garbage():
@@ -531,17 +624,281 @@ def simulate_restoration():
     print_and_play(get_system_text('40'))
 
 
-def execute_special_function(function, prompt):
-    if function == FUNCTION_YOUTUBE:  # TODO:
-        print('youtube')
-    elif function == FUNCTION_SPOTIFY:  # TODO:
-        print('spotify')
-    elif function == FUNCTION_WIKIPEDIA:  # TODO:
-        print('wikipedia')
-    elif function == FUNCTION_WOLFRAM:  # TODO:
-        print('wolfram')
-    elif function == FUNCTION_WEB:  # TODO: # format the keywords to avoyd spaces on url and know when they start and end
-        print('web')
+def cut_phrase_before_a_word(phrase, words_list):
+    phrase_words = phrase.split()
+    for word in words_list:
+        if word in phrase_words:
+            indice = phrase_words.index(word)
+            if indice < len(phrase_words) - 1:
+                return ' '.join(phrase_words[indice + 1:])
+
+    return phrase
+
+
+def open_url(url):
+    try:
+        webbrowser.open(url)
+    except Exception as e:  # Search on Google
+        pywhatkit.search(url)
+
+
+def open_youtube(prompt, key_phrase):
+    print_and_play(get_system_text('42'))
+    youtube_search_prompt = get_user_input(True)
+    print_and_play(get_system_text('43') +
+                   youtube_search_prompt + get_system_text('44'))
+    pywhatkit.playonyt(youtube_search_prompt)
+
+
+def first_result_on_spotify(song_name):
+    result = spotify.search(q=song_name, type='track', limit=1)
+    items = result['tracks']['items']
+    if len(items) > 0:
+        url = items[0]['external_urls']['spotify']
+        return 'spotify:' + url
+    else:
+        return False
+
+
+def open_spotify(prompt, key_phrase):
+    print_and_play(get_system_text('45'))
+    spotify_search_prompt = get_user_input(True)
+    url_song = first_result_on_spotify(spotify_search_prompt)
+    if url_song:
+        print_and_play(get_system_text('43') +
+                       spotify_search_prompt + get_system_text('46'))
+        open_url(url_song)
+    else:
+        print_and_play(get_system_text('47'))
+
+
+def search_on_wikipedia(text):
+    language = assistant_language
+    success = False
+    message = ''
+    suggestion = None
+    error = None
+    try:
+        wikipedia.set_lang(language)
+        # Realizar la búsqueda en Wikipedia
+        results = wikipedia.search(text)
+
+        if len(results) == 0:
+            message = get_system_text('47')
+        else:
+            # Obtener el primer resultado de la búsqueda
+            first_result = results[0]
+
+            try:
+                # Obtener el artículo correspondiente al primer resultado
+                page = wikipedia.page(first_result)
+
+                # Obtener la URL del artículo
+                url = page.url
+                # Abrir el enlace en el navegador
+                webbrowser.open(url)
+
+                summary = wikipedia.summary(text, sentences=1)
+
+                if summary and page:
+                    success = True
+                    message = re.sub(r'\[\d+\]', '', summary)
+            except wikipedia.DisambiguationError as e:
+                suggest = e.options
+                if len(suggest) > 0:
+                    first_suggestion = suggest[0]
+                    suggestion = first_suggestion
+                else:
+                    message = get_system_text('47')
+                    error = e
+            except wikipedia.PageError as e:
+                message = get_system_text('50')
+                error = e
+            except wikipedia.exceptions.HTTPTimeoutError as e:
+                message = get_system_text('51')
+                error = e
+            except wikipedia.exceptions.RedirectError as e:
+                message = get_system_text('52')
+                error = e
+            except TypeError as e:
+                message = get_system_text('53')
+                error = e
+            except Exception as e:
+                message = "Error: ", str(e)
+                error = str(e)
+
+    except wikipedia.exceptions.WikipediaException as e:
+        message = get_system_text('54')
+        error = e
+    except Exception as e:
+        message = "Error: ", str(e)
+        error = str(e)
+
+    func_return = {
+        "success": success,
+        "message": message,
+        "error": error,
+        "suggestion": suggestion
+    }
+
+    return func_return
+
+
+def open_wikipedia(prompt, key_phrase):
+    print_and_play(get_system_text('48'))
+    wikipedia_search_prompt = get_user_input(True)
+    result = search_on_wikipedia(wikipedia_search_prompt)
+    if result["success"]:
+        print_and_play(get_system_text('55') + result["message"])
+    else:
+        if result["suggestion"]:
+            new_result = search_on_wikipedia(result["suggestion"])
+            if new_result:
+                print_and_play(get_system_text('55') + new_result["message"])
+            else:
+                print_and_play(get_system_text('47'))
+        else:
+            print_system_output("open_wikipedia: " + str(result["error"]))
+
+
+def search_wolframalpha(prompt):
+    success = False
+    message = ''
+    try:
+        result = wolframClient.query(str(prompt))
+        # Extraer la respuesta principal
+        wolfram_response = next(result.results).text
+        if wolfram_response:
+            success = True
+            message = wolfram_response
+    except StopIteration as e:
+        message = get_system_text('57')
+        print_system_output(message + ' search_wolframalpha: ' + str(e))
+    except wolframalpha.WolframAlphaError as e:
+        message = get_system_text('58')
+        print_and_play(get_system_text('58'))
+        print_system_output(message + 'search_wolframalpha: ' + str(e))
+    except Exception as e:
+        print_system_output(message + 'search_wolframalpha: ' + str(e))
+
+    returne_object = {
+        "success": success,
+        "message": message,
+    }
+
+    return returne_object
+
+
+def open_wolfram(prompt, key_phrase):
+    while True:
+        print_and_play(get_system_text('59'))
+        wolfram_search_prompt = get_user_input(True)
+        if check_a_list_of_words_in_order_in_phrases(
+                wolfram_search_prompt, EXIT_WOLFRAM_KEYWORDS[assistant_language]):
+            break
+        if assistant_language != 'en':
+            wolfram_search_prompt = translate_text(
+                wolfram_search_prompt, es_to_en=True)
+        response = search_wolframalpha(wolfram_search_prompt)
+        if response["success"]:
+            if assistant_language != 'en':
+                wolfram_response = wolfram_search_prompt = translate_text(
+                    response["message"], es_to_en=False)
+            wolfram_response = wolfram_response.replace(" |", ",")
+            print_and_play(get_system_text('56') + wolfram_response)
+            print_and_play(get_system_text('60'))
+        else:
+            print_and_play(response["message"] + ' ' + get_system_text('69'))
+
+
+def open_web(prompt, key_phrase):
+    print_and_play(get_system_text('61'))
+    check_prompt = get_user_input(True)
+    if any_word_of_list_in_phrase(["google"], check_prompt):
+        print_and_play(get_system_text('62'))
+        google_prompt = get_user_input(True)
+        pywhatkit.search(google_prompt)
+    else:
+        print_and_play(get_system_text('63'))
+        url = str(
+            input(f"{USER_TEXT_COLOR}{get_system_text('5')}{TEXT_MARKUP}"))
+        url = url.strip()
+        open_url(url)
+
+
+def send_whatsapp_message_script():
+    time.sleep(3)
+
+    keyboard.press('ctrl')
+    keyboard.press('f')
+    keyboard.release('f')
+    keyboard.release('ctrl')
+
+    keyboard.press('shift')
+    for i in range(5):
+        keyboard.press('tab')
+        keyboard.release('tab')
+    keyboard.release('shift')
+
+    keyboard.press('enter')
+    keyboard.release('enter')
+    time.sleep(.2)
+
+    keyboard.press('alt')
+    keyboard.press('tab')
+    time.sleep(.2)
+    keyboard.release('tab')
+    time.sleep(.2)
+    keyboard.press('tab')
+    time.sleep(.2)
+    keyboard.release('tab')
+    keyboard.release('alt')
+
+
+def send_message_to_whatsapp(number, message):
+    if message is not None and message != '':
+        parsed_message = urllib.parse.quote(str(message))
+        url = f"https://wa.me/57{number}?text={parsed_message}"
+
+        webbrowser.open(url)
+        send_whatsapp_message_script()
+
+
+def open_whatsapp(prompt, key_phrase):
+    while True:
+        print_and_play(get_system_text('64'))
+        phone_number = str(
+            input(f"{USER_TEXT_COLOR}{get_system_text('5')}{TEXT_MARKUP}"))
+        phone_number = phone_number.strip()
+        phone_number = phone_number.replace(" ", "")
+        if re.match(r'^\d+$', phone_number) is not None:
+            break
+        else:
+            print_and_play(get_system_text('68'))
+    print_and_play(get_system_text('65'))
+    while True:
+        user_prompt = get_user_input(True)
+        if check_a_list_of_words_in_order_in_phrases(
+                user_prompt, EXIT_WHATSAPP_KEYWORDS[assistant_language]):
+            break
+        print_and_play(get_system_text('66'))
+        send_message_to_whatsapp(phone_number.strip(), user_prompt.strip())
+        print_and_play(get_system_text('67'))
+
+
+def execute_special_function(function, prompt, key_phrase):
+    if function == FUNCTION_YOUTUBE:
+        open_youtube(prompt, key_phrase)
+    elif function == FUNCTION_SPOTIFY:
+        open_spotify(prompt, key_phrase)
+    elif function == FUNCTION_WIKIPEDIA:
+        open_wikipedia(prompt, key_phrase)
+    elif function == FUNCTION_WOLFRAM:
+        open_wolfram(prompt, key_phrase)
+    elif function == FUNCTION_WEB:
+        open_web(prompt, key_phrase)
+    elif function == FUNCTION_WHATSAPP:
+        open_whatsapp(prompt, key_phrase)
     elif function == FUNCTION_DELETE_GARBAGE:
         simulate_deletion()
     elif function == FUNCTION_RESTORE_GARBAGE:
@@ -689,6 +1046,7 @@ def get_user_input(awake):
     if input_mode == 'text':
         user_input = str(
             input(f"{USER_TEXT_COLOR}{get_system_text('5')}{TEXT_MARKUP}"))
+        user_input = user_input.strip()
     else:
         if audio_capture_mode == 'listen':
             user_input = listen_audio_to_text(awake)
@@ -698,32 +1056,59 @@ def get_user_input(awake):
     return user_input
 
 
-def get_wake_word():
+def get_wake_word(awake):
     while True:
-        text_from_audio = get_user_input(False)
+        prompt = get_user_input(awake)
 
-        wake_word = wake_word_from_phrase(text_from_audio)
+        function_and_keyphrase = wake_word_from_phrase(prompt)
 
-        if wake_word == FUNCTION_RESET:
-            return FUNCTION_RESET
-        elif wake_word != BARD_ASSISTANT_NAME and wake_word != GPT_ASSISTANT_NAME and wake_word != BING_ASSISTANT_NAME:
-            execute_special_function(wake_word, '')
-        elif wake_word != '':
-            print_system_output(
-                f"{get_system_text('20')}{wake_word}")
-            break
+        function = function_and_keyphrase["function"]
+
+        if function != SYSTEM_TASK:
+            if function == FUNCTION_RESET:
+                function_and_prompt = {
+                    "function": FUNCTION_RESET,
+                    "prompt": ""
+                }
+                return function_and_prompt
+            elif function == FUNCTION_YOUTUBE or function == FUNCTION_SPOTIFY or function == FUNCTION_WIKIPEDIA or function == FUNCTION_WOLFRAM or function == FUNCTION_WEB or function == FUNCTION_DELETE_GARBAGE or function == FUNCTION_RESTORE_GARBAGE or function == FUNCTION_WHATSAPP:
+                execute_special_function(
+                    function, prompt, function_and_keyphrase["key_phrase"])
+                continue_phrase = get_random_phrase(
+                    CONTINUE_CHAT_PHRASES[assistant_language])
+                print_and_play(continue_phrase)
+            elif not awake:
+                if function == BARD_ASSISTANT_NAME or function == GPT_ASSISTANT_NAME or function == BING_ASSISTANT_NAME:
+                    print_system_output(
+                        f"{get_system_text('20')}{function}")
+                    function_and_prompt = {
+                        "function": function,
+                        "prompt": ""
+                    }
+                    return function_and_prompt
+                else:
+                    not_wake_word_phrase = get_random_phrase(
+                        NOT_WAKE_WORD_PHRASES[assistant_language])
+                    print_and_play(not_wake_word_phrase)
+            else:
+                function_and_prompt = {
+                    "function": FUNCTION_ASSISTANT,
+                    "prompt": prompt
+                }
+                return function_and_prompt
         else:
-            not_wake_word_phrase = get_random_phrase(
-                NOT_WAKE_WORD_PHRASES[assistant_language])
-            print_and_play(not_wake_word_phrase)
-    return wake_word
+            function_and_prompt = {
+                "function": SYSTEM_TASK,
+                "prompt": ""
+            }
+            return function_and_prompt
 
 
 async def start_binggpt():
     try:
         bing_bot = await Chatbot.create()
     except Exception as e:
-        print(e)
+        print_system_output("Bing GPT: " + e)
         return False
 
     return bing_bot
@@ -748,6 +1133,7 @@ async def main():
         assistant_name = get_assistant_name()
 
         # Bots initialization
+        messages = None  # Chat GPT messages
         bard_bot = start_bard()
         bard_thread = threading.Thread(
             target=contextualize_bard, daemon=True, args=(bard_bot, assistant_name))
@@ -767,7 +1153,8 @@ async def main():
         print_system_output(
             f"{get_system_text('19')}({BARD_ASSISTANT_NAME}: {BARD_WAKE_WORDS[0]}, {GPT_ASSISTANT_NAME}: {GPT_WAKE_WORDS[0]}, {BING_ASSISTANT_NAME}: {BING_WAKE_WORDS[0]})...")
 
-        wake_word = get_wake_word()
+        wake_word_and_prompt = get_wake_word(False)
+        wake_word = wake_word_and_prompt["function"]
         if wake_word == FUNCTION_RESET:
             print_and_play(get_system_text('18'))
             continue
@@ -776,22 +1163,17 @@ async def main():
             ACTIVATION_PHRASES[assistant_language])
         print_and_play(activation_phrase)
 
-        messages = None
-
         while True:
-            prompt = get_user_input(True)
+            function_and_prompt = get_wake_word(True)
+            function = function_and_prompt["function"]
 
-            execute_function = function_prompt_from_phrase(prompt)
-            if execute_function == FUNCTION_RESET:
+            if function == FUNCTION_RESET:
                 print_and_play(get_system_text('18'))
                 break
-            elif execute_function != FUNCTION_ASSISTANT:
-                execute_special_function(execute_function, prompt)
-                continue_phrase = get_random_phrase(
-                    CONTINUE_CHAT_PHRASES[assistant_language])
-                print_and_play(continue_phrase)
+            elif function == SYSTEM_TASK:
                 continue
             else:
+                prompt = function_and_prompt["prompt"]
                 if wake_word == BING_ASSISTANT_NAME:
                     if bing_bot:
                         bot_response = await get_bing_response(prompt, bing_bot)
