@@ -20,7 +20,7 @@ import speech_recognition as sr
 from EdgeGPT import Chatbot, ConversationStyle
 from Bard import Chatbot as BardBot
 from dotenv import load_dotenv
-from settings.config import DEFAULT_ASSISTANT_LANGUAGE, DEFAULT_INPUT_MODE, PUSH_TO_TALK_KEY, GPT_MAX_TOKENS, RECORD_INTERVAL, BING_WAKE_WORDS, GPT_WAKE_WORDS, BARD_WAKE_WORDS, EXIT_WORDS, RESET_WORDS, CHANGE_LANGUAGE_WORDS, YOUTUBE_KEYWORDS, SPOTIFY_KEYWORDS, WIKIPEDIA_KEYWORDS, WOLFRAM_KEYWORDS, WEB_KEYWORDS, GPT_INITIAL_CONTEXT, BARD_INITIAL_CONTEXT, LOADING_PHRASES, ACTIVATION_PHRASES, CONTINUE_CHAT_PHRASES, FINISH_CHAT_PHRASES, DID_NOT_UNDERSTAND_PHRASES, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, FUNCTION_ASSISTANT, FUNCTION_RESET, BARD_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BING_ASSISTANT_NAME, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, TEXT_MARKUP, SYSTEM_TEXT_COLOR, SYSTEM_TEXTS, LANGUAGE_CHANGED_PHRASES, FUNCTION_CHANGE_LANGUAGE, ASISSTANT_RESPONSE_LENGTH, RESPONSE_LENGTH_MARGIN, FUNCTION_CHANGE_INPUT_MODE, CHANGE_INPUT_MODE_WORDS, DEFAULT_AUDIO_CAPTURE_MODE, INPUT_MODE_CHANGED_PHRASES, CHANGE_AUDIO_CAPTURE_MODE_WORDS, AUDIO_CAPTURE_MODE_CHANGED_PHRASES, FUNCTION_CHANGE_AUDIO_CAPTURE_MODE, SELECTED_ENGLISH_ASSISTANT, SELECTED_SPANISH_ASSISTANT, SPEECH_RATE_INCREMENT, SPEECH_PITCH_INCREMENT, PITCH_CONTOUR, VOICE_STYLE, VOICE_STYLE_DEGREE, SPANISH_ASSISTANT_NAME, ENGLISH_ASSISTANT_NAME, DELETE_SCRIPT, GARBAGE_KEYWORDS, FUNCTION_DELETE_GARBAGE
+from settings.config import DEFAULT_ASSISTANT_LANGUAGE, DEFAULT_INPUT_MODE, PUSH_TO_TALK_KEY, GPT_MAX_TOKENS, RECORD_INTERVAL, BING_WAKE_WORDS, GPT_WAKE_WORDS, BARD_WAKE_WORDS, EXIT_WORDS, RESET_WORDS, CHANGE_LANGUAGE_WORDS, YOUTUBE_KEYWORDS, SPOTIFY_KEYWORDS, WIKIPEDIA_KEYWORDS, WOLFRAM_KEYWORDS, WEB_KEYWORDS, GPT_INITIAL_CONTEXT, BARD_INITIAL_CONTEXT, LOADING_PHRASES, ACTIVATION_PHRASES, CONTINUE_CHAT_PHRASES, FINISH_CHAT_PHRASES, DID_NOT_UNDERSTAND_PHRASES, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, FUNCTION_ASSISTANT, FUNCTION_RESET, BARD_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BING_ASSISTANT_NAME, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, TEXT_MARKUP, SYSTEM_TEXT_COLOR, SYSTEM_TEXTS, LANGUAGE_CHANGED_PHRASES, FUNCTION_CHANGE_LANGUAGE, ASISSTANT_RESPONSE_LENGTH, RESPONSE_LENGTH_MARGIN, FUNCTION_CHANGE_INPUT_MODE, CHANGE_INPUT_MODE_WORDS, DEFAULT_AUDIO_CAPTURE_MODE, INPUT_MODE_CHANGED_PHRASES, CHANGE_AUDIO_CAPTURE_MODE_WORDS, AUDIO_CAPTURE_MODE_CHANGED_PHRASES, FUNCTION_CHANGE_AUDIO_CAPTURE_MODE, SELECTED_ENGLISH_ASSISTANT, SELECTED_SPANISH_ASSISTANT, SPEECH_RATE_INCREMENT, SPEECH_PITCH_INCREMENT, PITCH_CONTOUR, VOICE_STYLE, VOICE_STYLE_DEGREE, SPANISH_ASSISTANT_NAME, ENGLISH_ASSISTANT_NAME, DELETE_SCRIPT, DELETE_GARBAGE_KEYWORDS, FUNCTION_DELETE_GARBAGE, RESTORE_GARBAGE_KEYWORDS, FUNCTION_RESTORE_GARBAGE, RESTORE_SCRIPT
 
 # Carga las variables de entorno
 load_dotenv()
@@ -28,6 +28,7 @@ load_dotenv()
 assistant_language = DEFAULT_ASSISTANT_LANGUAGE
 input_mode = DEFAULT_INPUT_MODE
 audio_capture_mode = DEFAULT_AUDIO_CAPTURE_MODE
+garbage_cleaned = False
 
 GPT_API_KEY = os.environ['GPT_API_KEY']
 AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
@@ -57,6 +58,8 @@ def handle_keyboard_interrupt(signal, frame):
     print_system_output(get_system_text('1'))
     goodbye_phrase = get_random_phrase(FINISH_CHAT_PHRASES[assistant_language])
     print_and_play(goodbye_phrase)
+    if garbage_cleaned:
+        restore_garbage()
     sys.exit(0)  # Finaliza el programa sin mostrar el traceback
 
 
@@ -335,12 +338,19 @@ def system_functions_from_phrase(phrase):
     global audio_capture_mode
     system_function = ''
     if any_word_of_list_in_phrase(EXIT_WORDS[assistant_language], phrase):
+        if garbage_cleaned:
+            restore_garbage()
         goodbye_phrase = get_random_phrase(
             FINISH_CHAT_PHRASES[assistant_language])
         print_and_play(goodbye_phrase)
         sys.exit(0)
     elif any_word_of_list_in_phrase(RESET_WORDS[assistant_language], phrase):
         system_function = FUNCTION_RESET
+
+    elif check_a_list_of_words_in_order_in__phrases(phrase, DELETE_GARBAGE_KEYWORDS[assistant_language]):
+        system_function = FUNCTION_DELETE_GARBAGE
+    elif check_a_list_of_words_in_order_in__phrases(phrase, RESTORE_GARBAGE_KEYWORDS[assistant_language]):
+        system_function = FUNCTION_RESTORE_GARBAGE
 
     elif any_word_of_list_in_phrase(CHANGE_INPUT_MODE_WORDS[assistant_language], phrase):
         system_function = FUNCTION_CHANGE_INPUT_MODE
@@ -381,14 +391,14 @@ def system_functions_from_phrase(phrase):
             print_and_play(change_language_phrase)
             assistant_language = "es"
             print_system_output(get_system_text('24'))
-            # system_function = FUNCTION_RESET # Not necessary but recommended
+            system_function = FUNCTION_RESET
         else:
             change_language_phrase = get_random_phrase(
                 LANGUAGE_CHANGED_PHRASES[assistant_language])
             print_and_play(change_language_phrase)
             assistant_language = "en"
             print_system_output(get_system_text('24'))
-            # system_function = FUNCTION_RESET # Not necessary but recommended
+            system_function = FUNCTION_RESET
 
     return system_function
 
@@ -443,8 +453,6 @@ def function_prompt_from_phrase(phrase):
         execute_function = FUNCTION_WOLFRAM
     elif check_a_list_of_words_in_order_in__phrases(phrase, WEB_KEYWORDS[assistant_language]):
         execute_function = FUNCTION_WEB
-    elif check_a_list_of_words_in_order_in__phrases(phrase, GARBAGE_KEYWORDS[assistant_language]):
-        execute_function = FUNCTION_DELETE_GARBAGE
     else:
         execute_function = FUNCTION_ASSISTANT
     return execute_function
@@ -482,7 +490,14 @@ def delete_garbage():
     run_script(DELETE_SCRIPT, "legend", timeout, "trash", True)
 
 
+def restore_garbage():
+    timeout = 0
+    run_script(RESTORE_SCRIPT, "valorant", timeout, "trash", False)
+    run_script(RESTORE_SCRIPT, "legend", timeout, "trash", False)
+
+
 def simulate_deletion():
+    global garbage_cleaned
     timeout = 2
     print_and_play(get_system_text('29'))
     time.sleep(timeout)
@@ -507,6 +522,13 @@ def simulate_deletion():
     time.sleep(timeout)
     delete_garbage_thread.join()
     print_and_play(get_system_text('38'))
+    garbage_cleaned = True
+
+
+def simulate_restoration():
+    print_and_play(get_system_text('39'))
+    restore_garbage()
+    print_and_play(get_system_text('40'))
 
 
 def execute_special_function(function, prompt):
@@ -522,6 +544,8 @@ def execute_special_function(function, prompt):
         print('web')
     elif function == FUNCTION_DELETE_GARBAGE:
         simulate_deletion()
+    elif function == FUNCTION_RESTORE_GARBAGE:
+        simulate_restoration()
 
 
 def clear_text(text):
@@ -674,7 +698,7 @@ def get_user_input(awake):
     return user_input
 
 
-def get_wake_word(assistant_name):
+def get_wake_word():
     while True:
         text_from_audio = get_user_input(False)
 
@@ -682,12 +706,8 @@ def get_wake_word(assistant_name):
 
         if wake_word == FUNCTION_RESET:
             return FUNCTION_RESET
-        elif wake_word == FUNCTION_CHANGE_LANGUAGE:
-            welcome_phrase = get_random_phrase(
-                WELCOME_PHRASES[assistant_language])
-            parsed_welcome_phrase = welcome_phrase.replace(
-                "{}", assistant_name)
-            print_and_play(parsed_welcome_phrase)
+        elif wake_word != BARD_ASSISTANT_NAME and wake_word != GPT_ASSISTANT_NAME and wake_word != BING_ASSISTANT_NAME:
+            execute_special_function(wake_word, '')
         elif wake_word != '':
             print_system_output(
                 f"{get_system_text('20')}{wake_word}")
@@ -747,7 +767,7 @@ async def main():
         print_system_output(
             f"{get_system_text('19')}({BARD_ASSISTANT_NAME}: {BARD_WAKE_WORDS[0]}, {GPT_ASSISTANT_NAME}: {GPT_WAKE_WORDS[0]}, {BING_ASSISTANT_NAME}: {BING_WAKE_WORDS[0]})...")
 
-        wake_word = get_wake_word(assistant_name)
+        wake_word = get_wake_word()
         if wake_word == FUNCTION_RESET:
             print_and_play(get_system_text('18'))
             continue

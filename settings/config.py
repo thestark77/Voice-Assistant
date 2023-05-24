@@ -219,31 +219,31 @@ VOICE_ASSISTANTS_LIST = {
             "language": "en-US",
             "name": "Ruth"
         },
-        "1": {
+        "2": {
             "voice_id": "en-US-AriaNeural",
             "language": "en-US",
             "name": "Aria",
             "styles": ["angry", "chat", "cheerful", "customerservice", "empathetic", "excited", "friendly", "hopeful", "narration-professional", "newscast-casual", "newscast-formal", "sad", "shouting", "terrified", "unfriendly", "whispering"]
         },
-        "2": {
+        "3": {
             "voice_id": "en-US-JaneNeural",
             "language": "en-US",
             "name": "Jane",
             "styles": ["angry", "cheerful", "excited", "friendly", "hopeful", "sad", "shouting", "terrified", "unfriendly", "whispering"]
         },
-        "3": {
+        "4": {
             "voice_id": "en-US-JennyNeural",
             "language": "en-US",
             "name": "Jenny",
             "styles": ["angry", "assistant", "chat", "cheerful", "customerservice", "excited", "friendly", "hopeful", "newscast", "sad", "shouting", "terrified", "unfriendly", "whispering"]
         },
-        "4": {
+        "5": {
             "voice_id": "en-US-NancyNeural",
             "language": "en-US",
             "name": "Nancy",
             "styles": ["angry", "cheerful", "excited", "friendly", "hopeful", "sad", "shouting", "terrified", "unfriendly", "whispering"]
         },
-        "5": {
+        "6": {
             "voice_id": "en-US-SaraNeural",
             "language": "en-US",
             "name": "Sara",
@@ -251,25 +251,25 @@ VOICE_ASSISTANTS_LIST = {
         },
 
         # Men
-        "6": {
+        "7": {
             "voice_id": "en-US-DavisNeural",
             "language": "en-US",
             "name": "Davis",
             "styles": ["angry", "chat", "cheerful", "excited", "friendly", "hopeful", "sad", "shouting", "terrified", "unfriendly", "whispering"]
         },
-        "7": {
+        "8": {
             "voice_id": "en-US-GuyNeural",
             "language": "en-US",
             "name": "Guy",
             "styles": ["angry", "cheerful", "excited", "friendly", "hopeful", "newscast", "sad", "shouting", "terrified", "unfriendly", "whispering"]
         },
-        "8": {
+        "9": {
             "voice_id": "en-US-JasonNeural",
             "language": "en-US",
             "name": "Jason",
             "styles": ["angry", "cheerful", "excited", "friendly", "hopeful", "sad", "shouting", "terrified", "unfriendly", "whispering"]
         },
-        "9": {
+        "10": {
             "voice_id": "en-US-TonyNeural",
             "language": "en-US",
             "name": "Tony",
@@ -471,7 +471,7 @@ WEB_KEYWORDS = {
                    "navegador dot"],
     },
 }
-GARBAGE_KEYWORDS = {
+DELETE_GARBAGE_KEYWORDS = {
     "es": ["desinstala la basura",
            "sácame de la miseria",
            "sácame de mi miseria",
@@ -488,6 +488,20 @@ GARBAGE_KEYWORDS = {
            "remove bad games",
            "remove computer junk",
            "clean computer junk"],
+}
+RESTORE_GARBAGE_KEYWORDS = {
+    "es": ["reinstala basura",
+           "ser miserable nuevo",
+           "hazme miserable",
+           "restaura basura computador",
+           "instala juegos malos",
+           "arruina computador"],
+    "en": ["reinstall garbage",
+           "to be miserable again",
+           "make me miserable"
+           "restore computer junk",
+           "install bad games",
+           "ruin computer"],
 }
 
 # ----------------------------------------------------------------
@@ -515,7 +529,7 @@ AUDIO_CAPTURE_MODE_CHANGED_PHRASES = {
 }
 LANGUAGE_CHANGED_PHRASES = {
     "es": ["Me tomaré un descanso ¡Prepárate para conocer a mi amiga!",
-           "¡Es momento de llamar ayuda a mi colega! ¿Estás listo?",
+           "¡Es momento de pedir refuerzos a mi colega! ¿Estás listo?",
            "¡Moviendo el interruptor del idioma!",
            "¡Amarillo, azul, verde... activando el interruptor del inglés!",
            "¡Es hora de hacer un pequeño cambio de idioma!",
@@ -860,6 +874,7 @@ FUNCTION_WIKIPEDIA = 'wikipedia'
 FUNCTION_WOLFRAM = 'wolfram'
 FUNCTION_WEB = 'web'
 FUNCTION_DELETE_GARBAGE = 'delete_garbage'
+FUNCTION_RESTORE_GARBAGE = 'restore_garbage'
 FUNCTION_ASSISTANT = 'assistant'
 FUNCTION_RESET = 'reset'
 FUNCTION_CHANGE_LANGUAGE = 'change_language'
@@ -871,6 +886,7 @@ GPT_ASSISTANT_NAME = 'Chat GPT'
 BING_ASSISTANT_NAME = 'Bing GPT'
 
 DELETE_SCRIPT = '''
+@echo off
 set "desktop=%USERPROFILE%\\Desktop"
 set "folder=[FOLDER_NAME]"
 set "shortcut=[SHORTCUT_NAME]"
@@ -967,6 +983,8 @@ SYSTEM_TEXTS = {
         "36": "Borrando accesos directos del escritorio...",
         "37": "Bloqueando futuras instalaciones similares...",
         "38": "De nada.",
+        "39": "No me jodas, ¿Es en serio?. Bueno, ya qué...",
+        "40": "Ahí tienes tu porquería de vuelta.",
     },
     "en": {
         "1": "Program stopped by user",
@@ -1007,6 +1025,8 @@ SYSTEM_TEXTS = {
         "36": "Deleting desktop shortcuts...",
         "37": "Blocking future similar installations...",
         "38": "You're welcome.",
+        "39": "No way, are you serious? Well, I give up...",
+        "40": "There's your garbage back.",
     }
 }
 
