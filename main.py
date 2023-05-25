@@ -1,4 +1,4 @@
-from settings.config import DEFAULT_ASSISTANT_LANGUAGE, DEFAULT_INPUT_MODE, PUSH_TO_TALK_KEY, GPT_MAX_TOKENS, RECORD_INTERVAL, BING_WAKE_WORDS, GPT_WAKE_WORDS, BARD_WAKE_WORDS, EXIT_WORDS, RESET_WORDS, CHANGE_LANGUAGE_WORDS, YOUTUBE_KEYWORDS, SPOTIFY_KEYWORDS, WIKIPEDIA_KEYWORDS, WOLFRAM_KEYWORDS, WEB_KEYWORDS, GPT_INITIAL_CONTEXT, BARD_INITIAL_CONTEXT, LOADING_PHRASES, ACTIVATION_PHRASES, CONTINUE_CHAT_PHRASES, FINISH_CHAT_PHRASES, DID_NOT_UNDERSTAND_PHRASES, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, FUNCTION_ASSISTANT, FUNCTION_RESET, BARD_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BING_ASSISTANT_NAME, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, TEXT_MARKUP, SYSTEM_TEXT_COLOR, SYSTEM_TEXTS, LANGUAGE_CHANGED_PHRASES, FUNCTION_CHANGE_LANGUAGE, ASISSTANT_RESPONSE_LENGTH, RESPONSE_LENGTH_MARGIN, FUNCTION_CHANGE_INPUT_MODE, CHANGE_INPUT_MODE_WORDS, DEFAULT_AUDIO_CAPTURE_MODE, INPUT_MODE_CHANGED_PHRASES, CHANGE_AUDIO_CAPTURE_MODE_WORDS, AUDIO_CAPTURE_MODE_CHANGED_PHRASES, FUNCTION_CHANGE_AUDIO_CAPTURE_MODE, SELECTED_ENGLISH_ASSISTANT, SELECTED_SPANISH_ASSISTANT, SPEECH_RATE_INCREMENT, SPEECH_PITCH_INCREMENT, PITCH_CONTOUR, VOICE_STYLE, VOICE_STYLE_DEGREE, SPANISH_ASSISTANT_NAME, ENGLISH_ASSISTANT_NAME, DELETE_SCRIPT, DELETE_GARBAGE_KEYWORDS, FUNCTION_DELETE_GARBAGE, RESTORE_GARBAGE_KEYWORDS, FUNCTION_RESTORE_GARBAGE, RESTORE_SCRIPT, SYSTEM_TASK, WHATSAPP_KEYWORDS, FUNCTION_WHATSAPP, EXIT_WOLFRAM_KEYWORDS, EXIT_WHATSAPP_KEYWORDS
+from settings.config import DEFAULT_ASSISTANT_LANGUAGE, DEFAULT_INPUT_MODE, PUSH_TO_TALK_KEY, GPT_MAX_TOKENS, RECORD_INTERVAL, BING_WAKE_WORDS, GPT_WAKE_WORDS, BARD_WAKE_WORDS, EXIT_WORDS, RESET_WORDS, CHANGE_LANGUAGE_WORDS, YOUTUBE_KEYWORDS, SPOTIFY_KEYWORDS, WIKIPEDIA_KEYWORDS, WOLFRAM_KEYWORDS, WEB_KEYWORDS, GPT_INITIAL_CONTEXT, BARD_INITIAL_CONTEXT, LOADING_PHRASES, ACTIVATION_PHRASES, CONTINUE_CHAT_PHRASES, FINISH_CHAT_PHRASES, DID_NOT_UNDERSTAND_PHRASES, NOT_WAKE_WORD_PHRASES, WELCOME_PHRASES, FUNCTION_YOUTUBE, FUNCTION_SPOTIFY, FUNCTION_WIKIPEDIA, FUNCTION_WOLFRAM, FUNCTION_WEB, FUNCTION_ASSISTANT, FUNCTION_RESET, BARD_ASSISTANT_NAME, GPT_ASSISTANT_NAME, BING_ASSISTANT_NAME, ASSISTANT_TEXT_COLOR, USER_TEXT_COLOR, TEXT_MARKUP, SYSTEM_TEXT_COLOR, SYSTEM_TEXTS, LANGUAGE_CHANGED_PHRASES, ASSISTANT_RESPONSE_LENGTH, RESPONSE_LENGTH_MARGIN, FUNCTION_CHANGE_INPUT_MODE, CHANGE_INPUT_MODE_WORDS, DEFAULT_AUDIO_CAPTURE_MODE, INPUT_MODE_CHANGED_PHRASES, CHANGE_AUDIO_CAPTURE_MODE_WORDS, AUDIO_CAPTURE_MODE_CHANGED_PHRASES, FUNCTION_CHANGE_AUDIO_CAPTURE_MODE, SELECTED_ENGLISH_ASSISTANT, SELECTED_SPANISH_ASSISTANT, SPEECH_RATE_INCREMENT, SPEECH_PITCH_INCREMENT, PITCH_CONTOUR, VOICE_STYLE, VOICE_STYLE_DEGREE, SPANISH_ASSISTANT_NAME, ENGLISH_ASSISTANT_NAME, DELETE_SCRIPT, DELETE_GARBAGE_KEYWORDS, FUNCTION_DELETE_GARBAGE, RESTORE_GARBAGE_KEYWORDS, FUNCTION_RESTORE_GARBAGE, RESTORE_SCRIPT, SYSTEM_TASK, WHATSAPP_KEYWORDS, FUNCTION_WHATSAPP, EXIT_WOLFRAM_KEYWORDS, EXIT_WHATSAPP_KEYWORDS
 import signal
 import os
 import sys
@@ -18,9 +18,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import wikipedia
 import wolframalpha
-import pyautogui
 import urllib.parse
-import pyaudio
 from deep_translator import GoogleTranslator as Translator
 from pydub import playback
 import azure.cognitiveservices.speech as speechsdk
@@ -189,8 +187,8 @@ def synthesize_to_speaker(text):
         else:
             ssml_text = ssml_text.replace("[EXPRESSION-OPEN]", '')
             ssml_text = ssml_text.replace("[EXPRESSION-CLOSE]", '')
-
-        speech_synthesis_result = speech_synthesizer.speak_ssml_async(
+            
+            speech_synthesis_result = speech_synthesizer.speak_ssml_async(
             ssml_text).get()
 
         if speech_synthesis_result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
@@ -418,19 +416,6 @@ def system_functions_from_phrase(phrase):
             print_system_output(get_system_text('24'))
 
     return system_function
-
-
-# def check_words_in_order_in_a_phrase(phrase, words_list):  # (frase1, frase2)
-#     phrase = phrase.split()
-#     words_list = words_list.split()
-
-#     # Verificar si todas las palabras de frase2 están en frase1 en el mismo orden
-#     if all(word in phrase for word in words_list):
-#         # Verificar si el índice de cada palabra en frase1 es igual al índice correspondiente en frase2
-#         if all(phrase.index(words_list[i]) == i for i in range(len(words_list))):
-#             return True
-
-#     return False
 
 
 def check_words_in_order_in_a_phrase(phrase1, phrase2):
@@ -932,9 +917,9 @@ def clear_bing_text(response):
 
 
 def cut_text(text):
-    if len(text) > int(ASISSTANT_RESPONSE_LENGTH):
-        i = int(ASISSTANT_RESPONSE_LENGTH)
-        while i < len(text) and i < (int(ASISSTANT_RESPONSE_LENGTH) + int(RESPONSE_LENGTH_MARGIN)) and text[i] not in ('.', '!', '?', '\n'):
+    if len(text) > int(ASSISTANT_RESPONSE_LENGTH):
+        i = int(ASSISTANT_RESPONSE_LENGTH)
+        while i < len(text) and i < (int(ASSISTANT_RESPONSE_LENGTH) + int(RESPONSE_LENGTH_MARGIN)) and text[i] not in ('.', '!', '?', '\n'):
             i += 1
         cut_text = text[:i+1]
     else:
@@ -1096,36 +1081,35 @@ def get_wake_word(awake):
                     "prompt": prompt
                 }
                 return function_and_prompt
-        else:
-            function_and_prompt = {
-                "function": SYSTEM_TASK,
-                "prompt": ""
-            }
-            return function_and_prompt
 
 
 async def start_binggpt():
     try:
         bing_bot = await Chatbot.create()
+        return bing_bot
     except Exception as e:
         print_system_output("Bing GPT: " + e)
         return False
 
-    return bing_bot
+
+async def reset_binggpt(bing_bot):
+    try:
+        await bing_bot.reset()
+    except Exception as e:
+        print_system_output(get_system_text('21'))
 
 
 def start_bard():
     try:
         bard_bot = BardBot(BARD_TOKEN)
+        return bard_bot
     except Exception as e:
         return False
 
-    return bard_bot
 
 
 async def main():
     create_folders()
-    bing_bot = await start_binggpt()
 
     while True:
         loading_phrase = get_random_phrase(LOADING_PHRASES[assistant_language])
@@ -1134,12 +1118,12 @@ async def main():
 
         # Bots initialization
         messages = None  # Chat GPT messages
+        bing_bot = await start_binggpt()
         bard_bot = start_bard()
         bard_thread = threading.Thread(
             target=contextualize_bard, daemon=True, args=(bard_bot, assistant_name))
         bard_thread.start()
-        # bard_bot = start_bard()
-        # bing_bot = await start_binggpt()
+        
         if not bard_bot:
             print_system_output(get_system_text('22'))
         if not bing_bot:
@@ -1164,6 +1148,7 @@ async def main():
         print_and_play(activation_phrase)
 
         while True:
+            bot_response = None
             function_and_prompt = get_wake_word(True)
             function = function_and_prompt["function"]
 
@@ -1202,8 +1187,7 @@ async def main():
                     continue_phrase = get_random_phrase(
                         CONTINUE_CHAT_PHRASES[assistant_language])
                     print_and_play(continue_phrase)
-        if bing_bot:
-            await bing_bot.reset()
-
+                if bing_bot:
+                    await reset_binggpt(bing_bot)
 if __name__ == "__main__":  # TODO: Rebuild project in multiple files
     asyncio.run(main())

@@ -1,6 +1,6 @@
 # Voice-Assistant with chat GPT
 
-Este proyecto pretende crear un asistente de voz de Python que se activa a comandos de voz predeterminados, sintetiza el audio convirtiéndolo en texto usando la función "Speech‑to‑Text" de la librería de Google, lo procesa usando a elección del usuario uno de los tres modelos de lenguaje y generación de textos (Google Bard, ChaGPT o Bing+GPT), posteriormente recibe la respuesta del motor seleccionado en formato de texto, lo sintetiza nuevamente a audio usando la librería de AWS Polly, de Amazon, que dota al asistente de una voz femenina bastante pulida y orgánica y posteriormente se reproduce este audio, de tal manera que el usuario y el asistente puedan interactuar mediante voz de una forma ágil, cómoda, entretenida y eficaz. Todo esto mientras un amigable avatar animado en 3D se muestra en pantalla sincronizando su movimiento labial con el texto reproducido por el asistente de voz, usando la tecnología "Audio2Face" de la herramienta Omniverse de Nvidia.
+Este proyecto pretende crear un asistente de voz de Python que se activa a comandos de voz predeterminados, sintetiza el audio convirtiéndolo en texto usando la función "Speech‑to‑Text" de la librería de Google, lo procesa usando a elección del usuario uno de los tres modelos de lenguaje y generación de textos (Google Bard, ChaGPT o Bing+GPT), posteriormente recibe la respuesta del motor seleccionado en formato de texto, lo sintetiza nuevamente a audio usando la librería de AWS Polly, de Amazon, que dota al asistente de una voz femenina bastante pulida y orgánica y posteriormente se reproduce este audio, de tal manera que el usuario y el asistente puedan interactuar mediante voz de una forma ágil, cómoda, entretenida y eficaz. 
 
 El asistente puede establecer conversaciones con el usuario sobre cualquier tema, y además puede ejecutar tareas como reproducir vídeos en YouTube, música en Spotify, buscar en Wikipedia, abrir una página web o hacer una búsqueda en WolframAlpha, de igual manera el asistente es bastante personalizable, pudiendo el usuario cambiar parámetros como el idioma, la voz, la velocidad de habla, el nombre del asistente, entre otras cosas, y si bien el asistente está orientado principalmente a la interacción con voz, es posible también hacerlo mediante texto en un chat.
 
@@ -13,7 +13,7 @@ AWS_SECRET_ACCESS_KEY="PASTE_IT HERE"
 1. Si inicias el asistente o terminas una charla y te demoras varios minutos en volver a hablarle y consultar con uno de los bots, es posible que dé un error de conexión.
 Solución temporal: intentar hablarle de nuevo o reiniciar la conversación, bien sea por teclado o por input
 2. Cuando cambias en modo de entrada de voz a texto, la consola se llena de espacios o caracteres, por lo que antes de enviarle el primer mensaje por input de texto.
-Solución temporal: Borrar el chat, reiniciar el chat o detener el programa, cambiar el parámetro DEFAULT_INPUT_MODE a 'text', guardar los cambios e iniciar nuevemente el programa.
+Solución temporal: esto no afecta el funcionamiento del programa, sin embargo, puede reiniciar el chat o detener el programa, cambiar el parámetro DEFAULT_INPUT_MODE a 'text', guardar los cambios e iniciar nuevemente el programa.
 3. A veces al iniciar el programa ouede ser que Bing GPT no esté disponible, este bot tiene una conexión muy mala.
 Solución temporal: reiniciar el chat, detener el programa y volverlo a iniciar o ignorar el error y evitar usar Bing GPT como asistente
 
@@ -42,5 +42,6 @@ pip list
 pip install -r requirements.txt 
 deactivate
 poetry
+pip freeze > requirements.txt
 python -m pip install --upgrade pip
 python -m pip install -U pip wheel setuptools
