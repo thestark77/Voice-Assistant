@@ -8,7 +8,7 @@ ENGLISH_ASSISTANT = "1"  # Default: "1" Women: 1-5 / Men: 6-9
 # You can change the name. Default: "Scarlett"
 ENGLISH_ASSISTANT_NAME = "Scarlett"
 DEFAULT_INPUT_MODE = 'voice'  # voice / text
-PUSH_TO_TALK_KEY = 'space'  # Key for push to talk
+PUSH_TO_TALK_KEYS = ['space', 'ctrl']  # Key for push to talk
 DEFAULT_AUDIO_CAPTURE_MODE = 'ppt'  # ppt / listen
 # VOICE SETTINGS
 SPEECH_RATE_INCREMENT = '+18'  # talking speed [-80 - +100] Default: 18
