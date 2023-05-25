@@ -953,6 +953,7 @@ async def get_bing_response(prompt, bing_bot):
 
 
 def get_chatgpt_response(prompt, assistant_name, messages=None):
+    response = None
     if messages is None:
         initial_context = GPT_INITIAL_CONTEXT[assistant_language].replace(
             "[ASSISTANT_NAME]", assistant_name)
@@ -1001,6 +1002,7 @@ def get_chatgpt_response(prompt, assistant_name, messages=None):
 
 
 def get_bard_response(prompt, bard_bot):
+    response = None
     print_system_output(get_system_text('15'))
     initial_time = time.time()
     if assistant_language != 'en':
@@ -1012,6 +1014,8 @@ def get_bard_response(prompt, bard_bot):
     except Exception as e:
         print_system_output(get_system_text('16', ' get_bard_response: '), e)
         print_and_play(get_system_text('16'))
+        return False
+    if not response:
         return False
     bot_response = clear_text(response['content'])
     bot_response = cut_text(bot_response)

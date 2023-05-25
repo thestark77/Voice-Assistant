@@ -18,7 +18,7 @@ PITCH_CONTOUR = ""
 VOICE_STYLE = ""  # Voice assistan list: styles
 VOICE_STYLE_DEGREE = "1"  # Default 1
 # CHAT BOT SETTINGS
-ASSISTANT_RESPONSE_LENGTH = "400"
+ASSISTANT_RESPONSE_LENGTH = "200"
 RESPONSE_LENGTH_MARGIN = "200"
 # ----------------------------------------------------------------
 # System settings
