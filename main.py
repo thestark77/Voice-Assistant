@@ -10,7 +10,7 @@ import openai
 import asyncio
 import boto3
 import threading
-import pydub
+import pydub # TODO: change audio player in order to not use chocolatl
 import subprocess
 import pywhatkit
 import webbrowser
