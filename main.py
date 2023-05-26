@@ -10,15 +10,16 @@ import openai
 import asyncio
 import boto3
 import threading
-import pydub # TODO: change audio player in order to not use chocolatl
+import pydub  # TODO: change audio player in order to not use chocolatl
 import subprocess
+import requests
 import pywhatkit
 import webbrowser
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import wikipedia
 import wolframalpha
-import urllib.parse
+from urllib.parse import quote
 from deep_translator import GoogleTranslator as Translator
 from pydub import playback
 import azure.cognitiveservices.speech as speechsdk
@@ -141,14 +142,6 @@ def print_user_output(message):
     print(f"{USER_TEXT_COLOR}{message}{TEXT_MARKUP}")
 
 
-def any_word_of_list_in_phrase(list, phrase):
-    for word in list:
-        if word in phrase:
-            return True
-
-    return False
-
-
 def get_random_phrase(list):
     random_phrase = random.choice(list)
 
@@ -176,7 +169,7 @@ def synthesize_to_speaker(text):
         </voice>
         </speak>
         '''
-        if VOICE_STYLE != '' and VOICE_STYLE.lower() != 'default' and any_word_of_list_in_phrase(SELECTED_ENGLISH_ASSISTANT['styles'], VOICE_STYLE):
+        if VOICE_STYLE != '' and VOICE_STYLE.lower() != 'default' and check_a_list_of_words_in_order_in_phrases(VOICE_STYLE, SELECTED_ENGLISH_ASSISTANT['styles']):
             if VOICE_STYLE_DEGREE != '' and str(VOICE_STYLE_DEGREE) != '1':
                 style_open = f"<mstts:express-as style='{VOICE_STYLE}' styledegree='{VOICE_STYLE_DEGREE}'>"
             else:
@@ -187,9 +180,9 @@ def synthesize_to_speaker(text):
         else:
             ssml_text = ssml_text.replace("[EXPRESSION-OPEN]", '')
             ssml_text = ssml_text.replace("[EXPRESSION-CLOSE]", '')
-            
+
             speech_synthesis_result = speech_synthesizer.speak_ssml_async(
-            ssml_text).get()
+                ssml_text).get()
 
         if speech_synthesis_result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
             # print("Speech synthesized for text [Jorge]".format(text))
@@ -365,24 +358,24 @@ def system_functions_from_phrase(phrase):
     global input_mode
     global audio_capture_mode
     system_function = ''
-    if any_word_of_list_in_phrase(EXIT_WORDS[assistant_language], phrase):
+    if check_a_list_of_words_in_order_in_phrases(phrase, EXIT_WORDS[assistant_language], ):
         if garbage_cleaned:
             restore_garbage()
         goodbye_phrase = get_random_phrase(
             FINISH_CHAT_PHRASES[assistant_language])
         print_and_play(goodbye_phrase)
         sys.exit(0)
-    elif any_word_of_list_in_phrase(RESET_WORDS[assistant_language], phrase):
+    elif check_a_list_of_words_in_order_in_phrases(phrase, RESET_WORDS[assistant_language]):
         system_function = FUNCTION_RESET
 
-    elif any_word_of_list_in_phrase(CHANGE_INPUT_MODE_WORDS[assistant_language], phrase):
+    elif check_a_list_of_words_in_order_in_phrases(phrase, CHANGE_INPUT_MODE_WORDS[assistant_language]):
         system_function = FUNCTION_CHANGE_INPUT_MODE
         if input_mode == 'voice':
             change_input_mode_phrase = get_random_phrase(
                 INPUT_MODE_CHANGED_PHRASES[assistant_language])
             input_mode = "text"
             # system_function = FUNCTION_RESET # Not necessary but recommended
-        else:
+        else:  # TODO: block keyboard when voice mode is selected
             change_input_mode_phrase = get_random_phrase(
                 INPUT_MODE_CHANGED_PHRASES[assistant_language])
             input_mode = "voice"
@@ -390,7 +383,7 @@ def system_functions_from_phrase(phrase):
         print_and_play(change_input_mode_phrase)
         print_system_output(f"{get_system_text('23')}{input_mode}")
 
-    elif any_word_of_list_in_phrase(CHANGE_AUDIO_CAPTURE_MODE_WORDS[assistant_language], phrase):
+    elif check_a_list_of_words_in_order_in_phrases(phrase, CHANGE_AUDIO_CAPTURE_MODE_WORDS[assistant_language]):
         system_function = FUNCTION_CHANGE_AUDIO_CAPTURE_MODE
         if audio_capture_mode == 'listen':
             change_audio_capture_mode = get_random_phrase(
@@ -406,7 +399,7 @@ def system_functions_from_phrase(phrase):
         print_and_play(change_audio_capture_mode)
         print_system_output(f"{get_system_text('25')}{audio_capture_mode}")
 
-    elif any_word_of_list_in_phrase(CHANGE_LANGUAGE_WORDS[assistant_language], phrase):
+    elif check_a_list_of_words_in_order_in_phrases(phrase, CHANGE_LANGUAGE_WORDS[assistant_language]):
         system_function = FUNCTION_RESET
         # system_function = FUNCTION_CHANGE_LANGUAGE
         if assistant_language == 'en':
@@ -462,17 +455,17 @@ def wake_word_from_phrase(phrase):
                 "function": SYSTEM_TASK,
                 "key_phrase": ''
             }
-    elif any_word_of_list_in_phrase(BARD_WAKE_WORDS, phrase):
+    elif check_a_list_of_words_in_order_in_phrases(phrase, BARD_WAKE_WORDS):
         function_and_keyphrase = {
             "function": BARD_ASSISTANT_NAME,
             "key_phrase": ''
         }
-    elif any_word_of_list_in_phrase(GPT_WAKE_WORDS, phrase):
+    elif check_a_list_of_words_in_order_in_phrases(phrase, GPT_WAKE_WORDS):
         function_and_keyphrase = {
             "function": GPT_ASSISTANT_NAME,
             "key_phrase": ''
         }
-    elif any_word_of_list_in_phrase(BING_WAKE_WORDS, phrase):
+    elif check_a_list_of_words_in_order_in_phrases(phrase, BING_WAKE_WORDS):
         function_and_keyphrase = {
             "function": BING_ASSISTANT_NAME,
             "key_phrase": ''
@@ -628,10 +621,28 @@ def cut_phrase_before_a_word(phrase, words_list):
 
 
 def open_url(url):
+    url_found = False
+    url = url.replace(' ', '').strip()
+    if not "https://" in url and not "http://" in url:
+        url = 'http://' + url
+
     try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            url_found = True
+    except Exception as e:
+        pass
+
+    if url_found:
         webbrowser.open(url)
-    except Exception as e:  # Search on Google
+        print_and_play(get_system_text('70'))
+    else:
+        if "https://" in url:
+            url = url.replace('https://', '')
+        elif "http://" in url:
+            url = url.replace('http://', '')
         pywhatkit.search(url)
+        print_and_play(get_system_text('71'))
 
 
 def open_youtube(prompt, key_phrase):
@@ -659,7 +670,7 @@ def open_spotify(prompt, key_phrase):
     if url_song:
         print_and_play(get_system_text('43') +
                        spotify_search_prompt + get_system_text('46'))
-        open_url(url_song)
+        webbrowser.open(url_song)
     else:
         print_and_play(get_system_text('47'))
 
@@ -806,7 +817,7 @@ def open_wolfram(prompt, key_phrase):
 def open_web(prompt, key_phrase):
     print_and_play(get_system_text('61'))
     check_prompt = get_user_input(True)
-    if any_word_of_list_in_phrase(["google"], check_prompt):
+    if 'google' in check_prompt:
         print_and_play(get_system_text('62'))
         google_prompt = get_user_input(True)
         pywhatkit.search(google_prompt)
@@ -818,24 +829,7 @@ def open_web(prompt, key_phrase):
         open_url(url)
 
 
-def send_whatsapp_message_script():
-    time.sleep(3)
-
-    keyboard.press('ctrl')
-    keyboard.press('f')
-    keyboard.release('f')
-    keyboard.release('ctrl')
-
-    keyboard.press('shift')
-    for i in range(5):
-        keyboard.press('tab')
-        keyboard.release('tab')
-    keyboard.release('shift')
-
-    keyboard.press('enter')
-    keyboard.release('enter')
-    time.sleep(.2)
-
+def press_alt_double_tab_script():
     keyboard.press('alt')
     keyboard.press('tab')
     time.sleep(.2)
@@ -847,13 +841,43 @@ def send_whatsapp_message_script():
     keyboard.release('alt')
 
 
-def send_message_to_whatsapp(number, message):
+def send_whatsapp_message_script():
+    time.sleep(3)
+
+    keyboard.send('ctrl+f')
+
+    keyboard.press('shift')
+    for i in range(5):
+        keyboard.press('tab')
+        keyboard.release('tab')
+    keyboard.release('shift')
+
+    keyboard.press('enter')
+    keyboard.release('enter')
+    time.sleep(.2)
+
+    press_alt_double_tab_script()
+
+
+def send_message_to_whatsapp_desktop(number, message):
     if message is not None and message != '':
-        parsed_message = urllib.parse.quote(str(message))
+        parsed_message = quote(str(message))
         url = f"https://wa.me/57{number}?text={parsed_message}"
 
         webbrowser.open(url)
         send_whatsapp_message_script()
+
+
+def send_message_to_whatsapp(number, message):
+    if message is not None and message != '':
+        webbrowser.open(
+            f"https://web.whatsapp.com/send?phone=+57{number}&text={quote(message)}")
+    # time.sleep(4)
+    # pg.click(core.WIDTH / 2, core.HEIGHT / 2)
+    time.sleep(8)
+    keyboard.send("enter")
+    # core.close_tab(2)
+    keyboard.send('alt+alt')
 
 
 def open_whatsapp(prompt, key_phrase):
@@ -1118,7 +1142,6 @@ def start_bard():
         return False
 
 
-
 async def main():
     create_folders()
 
@@ -1134,7 +1157,7 @@ async def main():
         bard_thread = threading.Thread(
             target=contextualize_bard, daemon=True, args=(bard_bot, assistant_name))
         bard_thread.start()
-        
+
         if not bard_bot:
             print_system_output(get_system_text('22'))
         if not bing_bot:
@@ -1190,15 +1213,15 @@ async def main():
                         print_and_play(get_system_text('22'))
                         continue
 
-            if not bot_response:
-                break
-            else:
+            if bot_response:
                 print_and_play(bot_response)
-                if not any_word_of_list_in_phrase(["?", "¿"], bot_response):
+                if not '¿' in bot_response and not '?' in bot_response:
                     continue_phrase = get_random_phrase(
                         CONTINUE_CHAT_PHRASES[assistant_language])
                     print_and_play(continue_phrase)
                 if bing_bot:
                     await reset_binggpt(bing_bot)
+            else:
+                break
 if __name__ == "__main__":  # TODO: Rebuild project in multiple files
     asyncio.run(main())

@@ -7,8 +7,8 @@ azure-cognitiveservices-speech==1.28.0
 beautifulsoup4==4.12.2
 BingImageCreator==0.3.0
 blinker==1.6.2
-boto3==1.26.140
-botocore==1.29.140
+boto3==1.26.141
+botocore==1.29.141
 certifi==2023.5.7
 charset-normalizer==3.1.0
 click==8.1.3
@@ -16,11 +16,11 @@ colorama==0.4.6
 decorator==5.1.1
 deep-translator==1.11.0
 EasyProcess==1.1
-EdgeGPT==0.6.3
+EdgeGPT==0.6.5
 entrypoint2==1.1
 Flask==2.3.2
 frozenlist==1.3.3
-GoogleBard==1.0.3
+GoogleBard==1.1.3
 h11==0.14.0
 httpcore==0.17.2
 httpx==0.24.1

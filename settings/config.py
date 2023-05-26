@@ -283,7 +283,9 @@ SELECTED_ENGLISH_ASSISTANT = VOICE_ASSISTANTS_LIST['en'][ENGLISH_ASSISTANT]
 # ----------------------------------------------------------------
 # Keywords
 # ----------------------------------------------------------------
+# TODO: change individual assistants for a list
 BARD_WAKE_WORDS = ["asistente", "assistant", "google"]
+# TODO: create a default model constant so the user does not have to select one at the beggining, and add keywords to change model
 GPT_WAKE_WORDS = ["chat", "gpt", "caca"]
 BING_WAKE_WORDS = ["consulta", "consult", "bing", "online",]
 
@@ -340,15 +342,12 @@ CHANGE_LANGUAGE_WORDS = {
 }
 CHANGE_INPUT_MODE_WORDS = {
     "es": ["cambiar el modo de entrada",
-           "cambiar modo de entrada",
-           "cambia modo de entrada",
-           "cambia el modo de entrada",
-           "cambiar el método de entrada",
-           "cambiar método de entrada",
-           "cambia método de entrada",
+           "cambiar modo entrada",
+           "cambia modo entrada",
+           "cambiar método entrada",
+           "cambia método entrada",
            "cambia el método de entrada"],
     "en": ["change input mode",
-           "change the input mode",
            "change input method",
            "change the input method"]
 }
@@ -404,6 +403,7 @@ SPOTIFY_KEYWORDS = {
 WIKIPEDIA_KEYWORDS = {
     "es": ["busca wikipedia",
            "buscar wikipedia",
+           "abrir wikipedia",
            "abre wikipedia",
            "resultado wikipedia",
            "ve a wikipedia"
@@ -1023,6 +1023,8 @@ SYSTEM_TEXTS = {
         "67": "Mensaje enviado, si quieres seguir enviando mensajes a este número, dame el mensaje a continuación, si quieres terminar la conversación, solo dímelo",
         "68": "El número ingresado es inválido, por favor introdúcelo de nuevo... el número, por si acaso",
         "69": "por favor inténtalo de nuevo",
+        "70": "He abierto el sitio web en el navegador",
+        "71": "No he podido encontrar el sitio web que me solicitaste, por lo tanto lo he buscado en Google, aquí tienes los resultados",
     },
     "en": {
         "1": "Program stopped by user",
@@ -1094,6 +1096,8 @@ SYSTEM_TEXTS = {
         "67": "Message sent, if you want to keep sending messages to this number, give me the message below, if you want to end the conversation, just tell me",
         "68": "The number entered is invalid, please enter it again... the number, just in case",
         "69": "please try again",
+        "70": "I have opened the website in the browser",
+        "71": "I couldn't find the website you requested, so I googled it, here are the results",
     }
 }
 
