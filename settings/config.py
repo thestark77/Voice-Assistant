@@ -1025,6 +1025,7 @@ SYSTEM_TEXTS = {
         "69": "por favor inténtalo de nuevo",
         "70": "He abierto el sitio web en el navegador",
         "71": "No he podido encontrar el sitio web que me solicitaste, por lo tanto lo he buscado en Google, aquí tienes los resultados",
+        "72": "Error grabando el audio",
     },
     "en": {
         "1": "Program stopped by user",
@@ -1098,6 +1099,7 @@ SYSTEM_TEXTS = {
         "69": "please try again",
         "70": "I have opened the website in the browser",
         "71": "I couldn't find the website you requested, so I googled it, here are the results",
+        "72": "Error recording audio",
     }
 }
 

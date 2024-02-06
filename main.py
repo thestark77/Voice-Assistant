@@ -302,36 +302,39 @@ def get_text_from_audio(audio, recognizer, awake=True):
 
 
 def ptt_audio_to_text(awake=True):
-    recognizer = sr.Recognizer()
-    while True:
-        with sr.Microphone() as source:
-            # Inicializar audio vacío
-            audio_frame_data = b''
-            play_audio('audio/wake_detected.mp3')
-            # Esperar a que el usuario presione la tecla PTT
-            lock = True
-            key_pressed = None
-            while lock:
-                for word in PUSH_TO_TALK_KEYS:
-                    if keyboard.is_pressed(word):
-                        key_pressed = word
-                        lock = False
+    try:
+        recognizer = sr.Recognizer()
+        while True:
+            with sr.Microphone() as source:
+                # Inicializar audio vacío
+                audio_frame_data = b''
+                play_audio('audio/wake_detected.mp3')
+                # Esperar a que el usuario presione la tecla PTT
+                lock = True
+                key_pressed = None
+                while lock:
+                    for word in PUSH_TO_TALK_KEYS:
+                        if keyboard.is_pressed(word):
+                            key_pressed = word
+                            lock = False
+                            break
+                while True:
+                    # Grabar audio en fragmentos de 0.3 segundos
+                    audio_chunk = recognizer.record(
+                        source, duration=RECORD_INTERVAL)
+                    # Agregar el fragmento de audio al audio total
+                    audio_frame_data = audio_frame_data + audio_chunk.frame_data
+                    if not keyboard.is_pressed(key_pressed):
                         break
-            while True:
-                # Grabar audio en fragmentos de 0.3 segundos
-                audio_chunk = recognizer.record(
-                    source, duration=RECORD_INTERVAL)
-                # Agregar el fragmento de audio al audio total
-                audio_frame_data = audio_frame_data + audio_chunk.frame_data
-                if not keyboard.is_pressed(key_pressed):
-                    break
 
-        audio = sr.AudioData(
-            audio_frame_data, sample_rate=44100, sample_width=2)
+            audio = sr.AudioData(
+                audio_frame_data, sample_rate=44100, sample_width=2)
 
-        phrase = get_text_from_audio(audio, recognizer, awake)
-        if phrase != '':
-            break
+            phrase = get_text_from_audio(audio, recognizer, awake)
+            if phrase != '':
+                break
+    except Exception as e:
+        print_system_output(get_system_text('72'))
 
     return phrase
 
@@ -824,7 +827,7 @@ def open_web(prompt, key_phrase):
     else:
         print_and_play(get_system_text('63'))
         url = str(
-            input(f"{USER_TEXT_COLOR}{get_system_text('5')}{TEXT_MARKUP}"))
+            input(f"{USER_TEXT_COLOR}{get_system_text('5')}{TEXT_MARKUP}")) # TODO: change input with text for print + empty input and add a while True to verify input is not '0'. test it on module to see what happen
         url = url.strip()
         open_url(url)
 
@@ -1063,15 +1066,18 @@ def contextualize_bard(bard_bot, assistant_name):
 
 
 def get_user_input(awake):
-    if input_mode == 'text':
-        user_input = str(
-            input(f"{USER_TEXT_COLOR}{get_system_text('5')}{TEXT_MARKUP}"))
-        user_input = user_input.strip()
-    else:
-        if audio_capture_mode == 'listen':
-            user_input = listen_audio_to_text(awake)
+    while True:
+        if input_mode == 'text':
+            user_input = str(
+                input(f"{USER_TEXT_COLOR}{get_system_text('5')}{TEXT_MARKUP}"))
+            user_input = user_input.strip()
         else:
-            user_input = ptt_audio_to_text(awake)
+            if audio_capture_mode == 'listen':
+                user_input = listen_audio_to_text(awake)
+            else:
+                user_input = ptt_audio_to_text(awake)
+        if user_input.strip() != '':
+            break
 
     return user_input
 
@@ -1118,7 +1124,7 @@ def get_wake_word(awake):
                 return function_and_prompt
 
 
-async def start_binggpt():
+async def start_binggpt(): # TODO: try again if it fails
     try:
         bing_bot = await Chatbot.create()
         return bing_bot
@@ -1134,7 +1140,7 @@ async def reset_binggpt(bing_bot):
         print_system_output(get_system_text('21'))
 
 
-def start_bard():
+def start_bard(): # TODO: try again if it fails
     try:
         bard_bot = BardBot(BARD_TOKEN)
         return bard_bot
@@ -1157,7 +1163,7 @@ async def main():
         bard_thread = threading.Thread(
             target=contextualize_bard, daemon=True, args=(bard_bot, assistant_name))
         bard_thread.start()
-
+        
         if not bard_bot:
             print_system_output(get_system_text('22'))
         if not bing_bot:
